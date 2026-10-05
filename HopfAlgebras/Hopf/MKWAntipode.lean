@@ -71,17 +71,18 @@ theorem shuffleOf_singleton_singleton [Semiring R] (t u : PTree) :
 ordered forest on the right. -/
 def shuffleRight [Semiring R] (x : PlanarForestAlgebra R) (us : PlanarForest) :
     PlanarForestAlgebra R :=
-  Finsupp.sum x fun ts a => a • shuffleOf (R := R) ts us
+  Finsupp.sum x.coeff fun ts a => a • shuffleOf (R := R) ts us
 
 @[simp]
 theorem shuffleRight_zero_left [Semiring R] (us : PlanarForest) :
-    shuffleRight (R := R) 0 us = 0 :=
-  Finsupp.sum_zero_index
+    shuffleRight (R := R) 0 us = 0 := by
+  simp [shuffleRight]
 
 theorem shuffleRight_single_left [Semiring R] (ts : PlanarForest) (a : R)
     (us : PlanarForest) :
-    shuffleRight (MonoidAlgebra.single ts a) us = a • shuffleOf ts us :=
-  Finsupp.sum_single_index (by simp)
+    shuffleRight (MonoidAlgebra.single ts a) us = a • shuffleOf ts us := by
+  rw [shuffleRight, MonoidAlgebra.coeff_single]
+  exact Finsupp.sum_single_index (by simp)
 
 @[simp]
 theorem shuffleRight_ofForest_left [Semiring R] (ts us : PlanarForest) :
@@ -97,8 +98,9 @@ theorem shuffleRight_one_left [Semiring R] (us : PlanarForest) :
 
 theorem shuffleRight_add_left [Semiring R] (x y : PlanarForestAlgebra R)
     (us : PlanarForest) :
-    shuffleRight (x + y) us = shuffleRight x us + shuffleRight y us :=
-  Finsupp.sum_add_index' (fun _ => zero_smul R _) (fun _ a b => add_smul a b _)
+    shuffleRight (x + y) us = shuffleRight x us + shuffleRight y us := by
+  rw [shuffleRight, MonoidAlgebra.coeff_add]
+  exact Finsupp.sum_add_index' (fun _ => zero_smul R _) (fun _ a b => add_smul a b _)
 
 theorem shuffleRight_neg_left [Ring R] (x : PlanarForestAlgebra R)
     (us : PlanarForest) :
@@ -112,12 +114,12 @@ theorem shuffleRight_neg_left [Ring R] (x : PlanarForestAlgebra R)
 theorem shuffleRight_nil_right [Semiring R] (x : PlanarForestAlgebra R) :
     shuffleRight x [] = x := by
   rw [shuffleRight]
-  have h : ∀ ts ∈ x.support, ∀ a : R,
+  have h : ∀ ts ∈ x.coeff.support, ∀ a : R,
       a • shuffleOf (R := R) ts [] = MonoidAlgebra.single ts a := by
     intro ts _ a
     rw [shuffleOf_nil_right, ofForest, MonoidAlgebra.smul_single', mul_one]
-  rw [Finsupp.sum_congr fun ts hts => h ts hts (x ts)]
-  exact Finsupp.sum_single x
+  rw [Finsupp.sum_congr fun ts hts => h ts hts (x.coeff ts)]
+  exact MonoidAlgebra.sum_coeff_single x
 
 end
 

@@ -56,7 +56,7 @@ coefficient function, linearly in the element. -/
 private noncomputable def pairWith {α : Type u} {R : Type v}
     [CommSemiring R] (f : LRootedForest α → R) :
     LForestAlgebra α R →ₗ[R] R :=
-  Finsupp.linearCombination R f
+  (Finsupp.linearCombination R f).comp (AddMonoidAlgebra.coeffLinearEquiv R).toLinearMap
 
 private theorem pairWith_ofForest {α : Type u} {R : Type v}
     [CommSemiring R] (f : LRootedForest α → R) (ξ : LRootedForest α) :

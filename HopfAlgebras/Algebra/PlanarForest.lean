@@ -208,7 +208,7 @@ theorem toForestAlgebra_ofForest_empty [CommSemiring R] :
 @[simp]
 theorem counit_comp_toForestAlgebra [CommSemiring R] :
     (ForestAlgebra.counit R).comp (toForestAlgebra R) = counit R := by
-  apply MonoidAlgebra.algHom_ext
+  refine MonoidAlgebra.algHom_ext ?_ (by ext)
   intro ts
   change
     ForestAlgebra.counit R
@@ -259,7 +259,7 @@ theorem evalForest_append (χ : Character R) (ts us : PlanarForest) :
 @[ext]
 theorem ext {χ ψ : Character R} (h : ∀ ts, χ.evalForest ts = ψ.evalForest ts) :
     χ = ψ := by
-  apply MonoidAlgebra.algHom_ext
+  refine MonoidAlgebra.algHom_ext ?_ (by ext)
   intro ts
   exact h ts
 
@@ -551,7 +551,7 @@ theorem mapLabels_ofForest [CommSemiring R] (f : α → β) (ts : LPlanarForest 
 theorem mapLabels_id [CommSemiring R] :
     mapLabels (R := R) (fun a : α => a) =
       AlgHom.id R (LPlanarForestAlgebra α R) := by
-  apply MonoidAlgebra.algHom_ext
+  refine MonoidAlgebra.algHom_ext ?_ (by ext)
   intro ts
   change
     mapLabels (R := R) (fun a : α => a) (ofForest (R := R) ts) =
@@ -562,7 +562,7 @@ theorem mapLabels_id [CommSemiring R] :
 theorem mapLabels_comp [CommSemiring R] (g : β → γ) (f : α → β) :
     (mapLabels (R := R) g).comp (mapLabels (R := R) f) =
       mapLabels (R := R) (g ∘ f) := by
-  apply MonoidAlgebra.algHom_ext
+  refine MonoidAlgebra.algHom_ext ?_ (by ext)
   intro ts
   change
     mapLabels (R := R) g
@@ -599,7 +599,7 @@ theorem toLForestAlgebra_ofForest [CommSemiring R] (ts : LPlanarForest α) :
 theorem eraseLabels_comp_toLForestAlgebra [CommSemiring R] :
     (LForestAlgebra.eraseLabels (α := α) R).comp (toLForestAlgebra α R) =
       (PlanarForestAlgebra.toForestAlgebra R).comp (eraseLabels α R) := by
-  apply MonoidAlgebra.algHom_ext
+  refine MonoidAlgebra.algHom_ext ?_ (by ext)
   intro ts
   change
     LForestAlgebra.eraseLabels (α := α) R
@@ -613,7 +613,7 @@ theorem eraseLabels_comp_toLForestAlgebra [CommSemiring R] :
 @[simp]
 theorem counit_comp_toLForestAlgebra [CommSemiring R] :
     (LForestAlgebra.counit α R).comp (toLForestAlgebra α R) = counit α R := by
-  apply MonoidAlgebra.algHom_ext
+  refine MonoidAlgebra.algHom_ext ?_ (by ext)
   intro ts
   change
     LForestAlgebra.counit α R
@@ -638,7 +638,7 @@ theorem counit_comp_toLForestAlgebra [CommSemiring R] :
 theorem eraseLabels_comp_mapLabels [CommSemiring R] (f : α → β) :
     (eraseLabels β R).comp (mapLabels (R := R) f) =
       eraseLabels α R := by
-  apply MonoidAlgebra.algHom_ext
+  refine MonoidAlgebra.algHom_ext ?_ (by ext)
   intro ts
   change
     eraseLabels β R
@@ -650,7 +650,7 @@ theorem eraseLabels_comp_mapLabels [CommSemiring R] (f : α → β) :
 theorem eraseLabels_comp_constLabel [CommSemiring R] (a : α) :
     (eraseLabels α R).comp (constLabel a R) =
       AlgHom.id R (PlanarForestAlgebra R) := by
-  apply MonoidAlgebra.algHom_ext
+  refine MonoidAlgebra.algHom_ext ?_ (by ext)
   intro ts
   change
     eraseLabels α R
@@ -668,7 +668,7 @@ theorem constLabel_injective [CommSemiring R] (a : α) :
 theorem mapLabels_comp_constLabel [CommSemiring R] (f : α → β) (a : α) :
     (mapLabels (R := R) f).comp (constLabel a R) =
       constLabel (f a) R := by
-  apply MonoidAlgebra.algHom_ext
+  refine MonoidAlgebra.algHom_ext ?_ (by ext)
   intro ts
   change
     mapLabels (R := R) f
@@ -707,7 +707,7 @@ theorem evalForest_append (χ : Character α R) (ts us : LPlanarForest α) :
 @[ext]
 theorem ext {χ ψ : Character α R} (h : ∀ ts, χ.evalForest ts = ψ.evalForest ts) :
     χ = ψ := by
-  apply MonoidAlgebra.algHom_ext
+  refine MonoidAlgebra.algHom_ext ?_ (by ext)
   intro ts
   exact h ts
 

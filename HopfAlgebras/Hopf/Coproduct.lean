@@ -2358,7 +2358,7 @@ theorem coproductLeft_eq_coproductRight_of_singletons
       coproductLeft R (ofForest (R := R) (RootedForest.singleton τ)) =
         coproductRight R (ofForest (R := R) (RootedForest.singleton τ))) :
     coproductLeft R = coproductRight R := by
-  apply AddMonoidAlgebra.algHom_ext'
+  refine AddMonoidAlgebra.algHom_ext' ?_ (by ext)
   apply MonoidHom.ext
   intro φ
   change
@@ -2505,7 +2505,7 @@ theorem coproductLeft_eq_coproductRight :
 theorem counitLeft_coproduct :
     (ForestTensorAlgebra.counitLeft (R := R)).comp (coproduct R) =
       AlgHom.id R (ForestAlgebra R) := by
-  apply AddMonoidAlgebra.algHom_ext'
+  refine AddMonoidAlgebra.algHom_ext' ?_ (by ext)
   apply MonoidHom.ext
   intro φ
   simpa [coproduct, coproductMonoidHom, ofForest] using
@@ -2514,7 +2514,7 @@ theorem counitLeft_coproduct :
 theorem counitRight_coproduct :
     (ForestTensorAlgebra.counitRight (R := R)).comp (coproduct R) =
       AlgHom.id R (ForestAlgebra R) := by
-  apply AddMonoidAlgebra.algHom_ext'
+  refine AddMonoidAlgebra.algHom_ext' ?_ (by ext)
   apply MonoidHom.ext
   intro φ
   simpa [coproduct, coproductMonoidHom, ofForest] using

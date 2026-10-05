@@ -735,7 +735,7 @@ theorem coeff_comapMapLetters {γ : Type u} {δ : Type z}
 theorem comapMapLetters_id (σ : Signature α R) :
     comapMapLetters id σ = σ := by
   ext w
-  simp [comapMapLetters]
+  simp [comapMapLetters, coeff]
 
 theorem comapMapLetters_comp {γ : Type u} {δ : Type z} {ε : Type w}
     (f : γ → δ) (g : δ → ε) (σ : Signature ε R) :

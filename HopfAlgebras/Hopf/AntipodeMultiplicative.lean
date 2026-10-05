@@ -304,30 +304,30 @@ theorem antipode_add (φ ψ : RootedForest) :
   antipode_add_aux (order φ + order ψ) φ ψ le_rfl
 
 private theorem mem_support_list_sum {l : List (ForestAlgebra R)}
-    {ψ : RootedForest} (h : ψ ∈ l.sum.support) :
-    ∃ x ∈ l, ψ ∈ x.support := by
+    {ψ : RootedForest} (h : ψ ∈ l.sum.coeff.support) :
+    ∃ x ∈ l, ψ ∈ x.coeff.support := by
   classical
   induction l with
   | nil =>
       rw [List.sum_nil] at h
       exact absurd rfl (Finsupp.mem_support_iff.1 h)
   | cons a l ih =>
-      rw [List.sum_cons] at h
+      rw [List.sum_cons, AddMonoidAlgebra.coeff_add] at h
       rcases Finset.mem_union.1 (Finsupp.support_add h) with h' | h'
       · exact ⟨a, List.mem_cons_self, h'⟩
       · obtain ⟨x, hx, hψ⟩ := ih h'
         exact ⟨x, List.mem_cons_of_mem _ hx, hψ⟩
 
 private theorem mem_support_neg {x : ForestAlgebra R} {ψ : RootedForest}
-    (h : ψ ∈ (-x).support) : ψ ∈ x.support := by
+    (h : ψ ∈ (-x).coeff.support) : ψ ∈ x.coeff.support := by
   rw [Finsupp.mem_support_iff] at h ⊢
   intro h0
   apply h
-  rw [show (-x) ψ = -(x ψ) from rfl, h0, neg_zero]
+  rw [show (-x).coeff ψ = -(x.coeff ψ) from rfl, h0, neg_zero]
 
 private theorem antipode_support_aux (n : ℕ) :
     ∀ φ : RootedForest, order φ ≤ n →
-      ∀ ψ ∈ (antipode (R := R) φ).support, order ψ = order φ := by
+      ∀ ψ ∈ (antipode (R := R) φ).coeff.support, order ψ = order φ := by
   classical
   induction n with
   | zero =>
@@ -335,7 +335,7 @@ private theorem antipode_support_aux (n : ℕ) :
       have hφ : φ = 0 := (order_eq_zero_iff φ).1 (by omega)
       subst hφ
       rw [antipode_zero] at hψ
-      have : ψ ∈ (AddMonoidAlgebra.single (0 : RootedForest) (1 : R)).support := by
+      have : ψ ∈ (AddMonoidAlgebra.single (0 : RootedForest) (1 : R)).coeff.support := by
         simpa [AddMonoidAlgebra.one_def] using hψ
       have hψ0 : ψ = 0 := Finset.mem_singleton.1
         (Finsupp.support_single_subset this)
@@ -345,12 +345,12 @@ private theorem antipode_support_aux (n : ℕ) :
       by_cases hφ : φ = 0
       · subst hφ
         rw [antipode_zero] at hψ
-        have : ψ ∈ (AddMonoidAlgebra.single (0 : RootedForest) (1 : R)).support := by
+        have : ψ ∈ (AddMonoidAlgebra.single (0 : RootedForest) (1 : R)).coeff.support := by
           simpa [AddMonoidAlgebra.one_def] using hψ
         have hψ0 : ψ = 0 := Finset.mem_singleton.1
           (Finsupp.support_single_subset this)
         rw [hψ0]
-      · rw [antipode_eq_of_ne_zero hφ, sub_eq_add_neg] at hψ
+      · rw [antipode_eq_of_ne_zero hφ, sub_eq_add_neg, AddMonoidAlgebra.coeff_add] at hψ
         rcases Finset.mem_union.1 (Finsupp.support_add hψ) with h' | h'
         · have h'' := mem_support_neg h'
           have : ψ = φ := Finset.mem_singleton.1
@@ -361,7 +361,7 @@ private theorem antipode_support_aux (n : ℕ) :
           obtain ⟨x, hx, hψx⟩ := mem_support_list_sum h''
           rcases List.mem_map.1 hx with ⟨term, hterm, rfl⟩
           have hmem : term.1 ∈ properCoproductTerms φ := term.2
-          have hsupp := AddMonoidAlgebra.support_mul
+          have hsupp := AddMonoidAlgebra.support_coeff_mul_subset
             (antipode (R := R) term.1.1)
             (ForestAlgebra.ofForest (R := R) term.1.2)
           obtain ⟨a, ha, b, hb, rfl⟩ := Finset.mem_add.1 (hsupp hψx)
@@ -378,7 +378,7 @@ private theorem antipode_support_aux (n : ℕ) :
 /-- The BCK antipode preserves the order grading: `S(φ)` is supported on
 forests of the same order as `φ`. -/
 theorem order_eq_of_mem_support_antipode {φ ψ : RootedForest}
-    (hψ : ψ ∈ (antipode (R := R) φ).support) : order ψ = order φ :=
+    (hψ : ψ ∈ (antipode (R := R) φ).coeff.support) : order ψ = order φ :=
   antipode_support_aux (order φ) φ le_rfl ψ hψ
 
 end
@@ -403,13 +403,13 @@ commutative. -/
 theorem antipode_mul (x y : ForestAlgebra R) :
     antipode (R := R) (x * y) = antipode x * antipode y := by
   refine AddMonoidAlgebra.induction_on (x := x)
-    (p := fun x => antipode (R := R) (x * y) = antipode x * antipode y)
+    (motive := fun x => antipode (R := R) (x * y) = antipode x * antipode y)
     ?_ ?_ ?_
   · intro φ
     change antipode (R := R) (ofForest (R := R) φ * y) =
       antipode (ofForest (R := R) φ) * antipode y
     refine AddMonoidAlgebra.induction_on (x := y)
-      (p := fun y => antipode (R := R) (ofForest (R := R) φ * y) =
+      (motive := fun y => antipode (R := R) (ofForest (R := R) φ * y) =
         antipode (ofForest (R := R) φ) * antipode y)
       ?_ ?_ ?_
     · intro ψ

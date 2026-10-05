@@ -507,9 +507,10 @@ variable {α : Type u} {R : Type v} [CommRing R]
 /-- Evaluate a tensor term by applying the labelled antipode to the left factor
 and multiplying in the labelled forest algebra. -/
 noncomputable def antipodeLeft : LForestTensorAlgebra α R →ₗ[R] LForestAlgebra α R :=
-  Finsupp.linearCombination R fun term =>
+  (Finsupp.linearCombination R fun term : LRootedForest α × LRootedForest α =>
     LRootedForest.antipode (R := R) term.1 *
-      LForestAlgebra.ofForest (R := R) term.2
+      LForestAlgebra.ofForest (R := R) term.2).comp
+        (AddMonoidAlgebra.coeffLinearEquiv R).toLinearMap
 
 @[simp]
 theorem antipodeLeft_ofPair (term : LRootedForest α × LRootedForest α) :
@@ -550,9 +551,10 @@ theorem evalCharacter_antipodeLeft_sumTerms
 
 /-- Evaluate a labelled tensor term by applying the right-recursive antipode to the right factor. -/
 noncomputable def antipodeRight : LForestTensorAlgebra α R →ₗ[R] LForestAlgebra α R :=
-  Finsupp.linearCombination R fun term =>
+  (Finsupp.linearCombination R fun term : LRootedForest α × LRootedForest α =>
     LForestAlgebra.ofForest (R := R) term.1 *
-      LRootedForest.rightAntipode (R := R) term.2
+      LRootedForest.rightAntipode (R := R) term.2).comp
+        (AddMonoidAlgebra.coeffLinearEquiv R).toLinearMap
 
 @[simp]
 theorem antipodeRight_ofPair (term : LRootedForest α × LRootedForest α) :
@@ -901,7 +903,8 @@ variable {α : Type u} {R : Type v} [CommRing R]
 
 /-- The linear extension of the recursive antipode to the labelled forest algebra. -/
 noncomputable def antipode : LForestAlgebra α R →ₗ[R] LForestAlgebra α R :=
-  Finsupp.linearCombination R (LRootedForest.antipode (α := α) (R := R))
+  (Finsupp.linearCombination R (LRootedForest.antipode (α := α) (R := R))).comp
+    (AddMonoidAlgebra.coeffLinearEquiv R).toLinearMap
 
 @[simp]
 theorem antipode_ofForest (φ : LRootedForest α) :
@@ -923,7 +926,8 @@ theorem antipode_add (x y : LForestAlgebra α R) :
 
 /-- The linear extension of the right-recursive labelled antipode. -/
 noncomputable def rightAntipode : LForestAlgebra α R →ₗ[R] LForestAlgebra α R :=
-  Finsupp.linearCombination R (LRootedForest.rightAntipode (α := α) (R := R))
+  (Finsupp.linearCombination R (LRootedForest.rightAntipode (α := α) (R := R))).comp
+    (AddMonoidAlgebra.coeffLinearEquiv R).toLinearMap
 
 @[simp]
 theorem rightAntipode_ofForest (φ : LRootedForest α) :
@@ -949,7 +953,7 @@ theorem counit_rightAntipode (x : LForestAlgebra α R) :
       LForestAlgebra.counit α R x := by
   classical
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : LForestAlgebra α R =>
+    (motive := fun x : LForestAlgebra α R =>
       LForestAlgebra.counit α R (rightAntipode (R := R) x) =
         LForestAlgebra.counit α R x) x ?_ ?_ ?_
   · intro φ
@@ -969,7 +973,7 @@ theorem antipodeLeft_coproduct (x : LForestAlgebra α R) :
       LForestAlgebra.counit α R x • (1 : LForestAlgebra α R) := by
   classical
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : LForestAlgebra α R =>
+    (motive := fun x : LForestAlgebra α R =>
       LForestTensorAlgebra.antipodeLeft (R := R) (LForestAlgebra.coproduct α R x) =
         LForestAlgebra.counit α R x • (1 : LForestAlgebra α R)) x ?_ ?_ ?_
   · intro φ
@@ -991,7 +995,7 @@ theorem antipodeRight_coproduct (x : LForestAlgebra α R) :
       LForestAlgebra.counit α R x • (1 : LForestAlgebra α R) := by
   classical
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : LForestAlgebra α R =>
+    (motive := fun x : LForestAlgebra α R =>
       LForestTensorAlgebra.antipodeRight (R := R) (LForestAlgebra.coproduct α R x) =
         LForestAlgebra.counit α R x • (1 : LForestAlgebra α R)) x ?_ ?_ ?_
   · intro φ
@@ -1031,7 +1035,7 @@ theorem eraseLabels_antipode (x : LForestAlgebra α R) :
         (LForestAlgebra.eraseLabels (α := α) R x) := by
   classical
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : LForestAlgebra α R =>
+    (motive := fun x : LForestAlgebra α R =>
       LForestAlgebra.eraseLabels (α := α) R (antipode (R := R) x) =
         ForestAlgebra.antipode (R := R)
           (LForestAlgebra.eraseLabels (α := α) R x)) x ?_ ?_ ?_
@@ -1073,7 +1077,7 @@ theorem mapLabels_antipode {β : Type w} (f : α → β) (x : LForestAlgebra α 
       antipode (R := R) (LForestAlgebra.mapLabels (R := R) f x) := by
   classical
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : LForestAlgebra α R =>
+    (motive := fun x : LForestAlgebra α R =>
       LForestAlgebra.mapLabels (R := R) f (antipode (R := R) x) =
         antipode (R := R) (LForestAlgebra.mapLabels (R := R) f x)) x ?_ ?_ ?_
   · intro φ
@@ -1094,7 +1098,7 @@ theorem constLabel_antipode (a : α) (x : ForestAlgebra R) :
       antipode (R := R) (LForestAlgebra.constLabel a R x) := by
   classical
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : ForestAlgebra R =>
+    (motive := fun x : ForestAlgebra R =>
       LForestAlgebra.constLabel a R (ForestAlgebra.antipode (R := R) x) =
         antipode (R := R) (LForestAlgebra.constLabel a R x)) x ?_ ?_ ?_
   · intro φ
@@ -1116,7 +1120,7 @@ theorem eraseLabels_rightAntipode (x : LForestAlgebra α R) :
         (LForestAlgebra.eraseLabels (α := α) R x) := by
   classical
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : LForestAlgebra α R =>
+    (motive := fun x : LForestAlgebra α R =>
       LForestAlgebra.eraseLabels (α := α) R (rightAntipode (R := R) x) =
         ForestAlgebra.rightAntipode (R := R)
           (LForestAlgebra.eraseLabels (α := α) R x)) x ?_ ?_ ?_
@@ -1138,7 +1142,7 @@ theorem mapLabels_rightAntipode {β : Type w} (f : α → β) (x : LForestAlgebr
       rightAntipode (R := R) (LForestAlgebra.mapLabels (R := R) f x) := by
   classical
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : LForestAlgebra α R =>
+    (motive := fun x : LForestAlgebra α R =>
       LForestAlgebra.mapLabels (R := R) f (rightAntipode (R := R) x) =
         rightAntipode (R := R) (LForestAlgebra.mapLabels (R := R) f x)) x ?_ ?_ ?_
   · intro φ
@@ -1159,7 +1163,7 @@ theorem constLabel_rightAntipode (a : α) (x : ForestAlgebra R) :
       rightAntipode (R := R) (LForestAlgebra.constLabel a R x) := by
   classical
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : ForestAlgebra R =>
+    (motive := fun x : ForestAlgebra R =>
       LForestAlgebra.constLabel a R (ForestAlgebra.rightAntipode (R := R) x) =
         rightAntipode (R := R) (LForestAlgebra.constLabel a R x)) x ?_ ?_ ?_
   · intro φ

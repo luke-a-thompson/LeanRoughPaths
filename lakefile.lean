@@ -8,7 +8,7 @@ package «lean-rough-paths» where
 
 require mathlib from git
   "https://github.com/leanprover-community/mathlib4" @
-  "2899f1514b0e12bd6c2dfa77f6f6bb0031cf7f21"
+  "c52f5fc15e8361912fba11513a3070f698eb56f8"
 
 @[default_target]
 lean_lib «HopfAlgebras» where

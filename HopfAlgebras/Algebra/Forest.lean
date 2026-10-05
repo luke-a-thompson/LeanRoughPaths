@@ -175,7 +175,7 @@ theorem evalForest_ofPTree_list_forall₂_perm (χ : Character R)
 @[ext]
 theorem ext {χ ψ : Character R} (h : ∀ φ, χ.evalForest φ = ψ.evalForest φ) :
     χ = ψ := by
-  apply AddMonoidAlgebra.algHom_ext'
+  refine AddMonoidAlgebra.algHom_ext' ?_ (by ext x)
   apply MonoidHom.ext
   intro φ
   change

@@ -649,7 +649,7 @@ theorem evalByLinearMaps_ofCharacter (χ ψ : ForestAlgebra.Character R) :
   apply LinearMap.ext
   intro x
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : ForestTensorAlgebra R =>
+    (motive := fun x : ForestTensorAlgebra R =>
       evalByLinearMaps
           (ForestAlgebra.LinearFunctional.ofCharacter χ)
           (ForestAlgebra.LinearFunctional.ofCharacter ψ) x =
@@ -766,7 +766,7 @@ theorem evalByCharacters_includeLeftPair
           (includeLeftPair (R := R) (ForestTensorAlgebra.ofPair (R := R) term)) =
         ForestTensorAlgebra.evalByCharacters χ ψ
           (ForestTensorAlgebra.ofPair (R := R) term)
-    simp [PTree.evalTripleCoproductTerm, PTree.evalCoproductTerm])) x
+    simp [PTree.evalTripleCoproductTerm, PTree.evalCoproductTerm]) (by ext)) x
 
 @[simp]
 theorem evalByCharacters_includeRightPair
@@ -783,7 +783,7 @@ theorem evalByCharacters_includeRightPair
           (includeRightPair (R := R) (ForestTensorAlgebra.ofPair (R := R) term)) =
         ForestTensorAlgebra.evalByCharacters ψ η
           (ForestTensorAlgebra.ofPair (R := R) term)
-    simp [PTree.evalTripleCoproductTerm, PTree.evalCoproductTerm])) x
+    simp [PTree.evalTripleCoproductTerm, PTree.evalCoproductTerm]) (by ext)) x
 
 end
 
@@ -844,6 +844,8 @@ theorem convolutionCoeff_unit_right (χ : ForestAlgebra.Character R) (φ : Roote
     convolutionCoeff χ (ForestAlgebra.counit R) φ = χ.evalForest φ := by
   refine Quotient.inductionOn φ ?_
   intro ts
+  change convolutionCoeff χ (ForestAlgebra.counit R) (ts : RootedForest) =
+    χ.evalForest (ts : RootedForest)
   rw [convolutionCoeff]
   change
     ForestTensorAlgebra.evalByCharacters χ (ForestAlgebra.counit R)
@@ -863,6 +865,8 @@ theorem convolutionCoeff_unit_left (χ : ForestAlgebra.Character R) (φ : Rooted
     convolutionCoeff (ForestAlgebra.counit R) χ φ = χ.evalForest φ := by
   refine Quotient.inductionOn φ ?_
   intro ts
+  change convolutionCoeff (ForestAlgebra.counit R) χ (ts : RootedForest) =
+    χ.evalForest (ts : RootedForest)
   rw [convolutionCoeff]
   change
     ForestTensorAlgebra.evalByCharacters (ForestAlgebra.counit R) χ
@@ -989,21 +993,21 @@ theorem linearFunctional_ofCharacter_injective :
 theorem convolution_unit_right (χ : Character R) :
     convolution χ (unit R) = χ := by
   change convolution χ (ForestAlgebra.counit R) = χ
-  ext τ
+  apply ForestAlgebra.Character.ext
+  intro φ
   change
     (convolution χ (ForestAlgebra.counit R)).evalForest
-        (RootedForest.singleton τ) =
-      χ.evalForest (RootedForest.singleton τ)
+        φ = χ.evalForest φ
   rw [convolution_evalForest, RootedForest.convolutionCoeff_unit_right]
 
 theorem convolution_unit_left (χ : Character R) :
     convolution (unit R) χ = χ := by
   change convolution (ForestAlgebra.counit R) χ = χ
-  ext τ
+  apply ForestAlgebra.Character.ext
+  intro φ
   change
     (convolution (ForestAlgebra.counit R) χ).evalForest
-        (RootedForest.singleton τ) =
-      χ.evalForest (RootedForest.singleton τ)
+        φ = χ.evalForest φ
   rw [convolution_evalForest, RootedForest.convolutionCoeff_unit_left]
 
 theorem linearFunctional_convolution_compAntipode_ofCharacter_left
@@ -1079,7 +1083,7 @@ theorem evalByCharacters_coproductLeft
         ForestTensorAlgebra.evalByCharacters (convolution χ ψ) η
           (ForestTensorAlgebra.ofPair (R := R) term)
     simp [ForestTripleTensorAlgebra.ofForests, PTree.evalTripleCoproductTerm,
-      PTree.evalCoproductTerm, convolution, ForestAlgebra.Character.evalForest])) x
+      PTree.evalCoproductTerm, convolution, ForestAlgebra.Character.evalForest]) (by ext)) x
 
 theorem evalByCharacters_coproductRight
     (χ ψ η : Character R) (x : ForestTensorAlgebra R) :
@@ -1099,7 +1103,7 @@ theorem evalByCharacters_coproductRight
         ForestTensorAlgebra.evalByCharacters χ (convolution ψ η)
           (ForestTensorAlgebra.ofPair (R := R) term)
     simp [ForestTripleTensorAlgebra.ofForests, PTree.evalTripleCoproductTerm,
-      PTree.evalCoproductTerm, convolution, ForestAlgebra.Character.evalForest])) x
+      PTree.evalCoproductTerm, convolution, ForestAlgebra.Character.evalForest]) (by ext)) x
 
 theorem evalByCharacters_forestCoproductLeft
     (χ ψ η : Character R) (x : ForestAlgebra R) :

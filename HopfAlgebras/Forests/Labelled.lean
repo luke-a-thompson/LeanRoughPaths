@@ -67,6 +67,7 @@ theorem ForestPerm.cons_eq {t u : PLTree α} {ts us : List (PLTree α)}
     (ht : LRootedTree.ofPLTree t = LRootedTree.ofPLTree u) (h : ForestPerm ts us) :
     ForestPerm (t :: ts) (u :: us) := by
   dsimp [ForestPerm] at h ⊢
+  simp only [List.map_cons]
   rw [ht]
   simpa using
     congrArg (fun φ : LRootedForest α => ({LRootedTree.ofPLTree u} : LRootedForest α) + φ)
@@ -543,7 +544,9 @@ theorem order_graft (a : α) (φ : LRootedForest α) :
     LRootedTree.order (graft a φ) = 1 + order φ := by
   refine Quotient.inductionOn φ ?_
   intro ts
-  simp [graft, order, orderList_out]
+  change LRootedTree.order (graft a (ts : LRootedForest α)) = 1 + order (ts : LRootedForest α)
+  rw [graft_coe]
+  simp [order, orderList_out]
 
 @[simp]
 theorem mapLabels_graft (f : α → β) (a : α) (φ : LRootedForest α) :

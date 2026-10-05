@@ -182,6 +182,7 @@ theorem erase_ofPair [Semiring R] (term : LRootedForest α × LRootedForest α) 
     erase (R := R) (ofPair (R := R) term) =
       ForestTensorAlgebra.ofPair (R := R) (PLTree.eraseCoproductTerm term) := by
   simp [erase, ofPair, ForestTensorAlgebra.ofPair, eraseTermAddHom]
+  rfl
 
 /-- Erasing labels commutes with summing finite tensor basis terms. -/
 theorem erase_sumTerms [Semiring R] :
@@ -238,6 +239,7 @@ theorem constLabel_ofPair [Semiring R] (a : α) (term : RootedForest × RootedFo
     constLabel (R := R) a (ForestTensorAlgebra.ofPair (R := R) term) =
       ofPair (R := R) (PLTree.constLabelCoproductTerm a term) := by
   simp [constLabel, ofPair, ForestTensorAlgebra.ofPair, constLabelTermAddHom]
+  rfl
 
 /-- Constant labelling commutes with summing finite tensor basis terms. -/
 theorem constLabel_sumTerms [Semiring R] (a : α) :
@@ -298,6 +300,7 @@ theorem mapLabels_ofPair [Semiring R] {β : Type w} (f : α → β)
     mapLabels (R := R) f (ofPair (R := R) term) =
       ofPair (R := R) (PLTree.mapCoproductTerm f term) := by
   simp [mapLabels, ofPair, mapLabelsTermAddHom]
+  rfl
 
 /-- Relabelling commutes with summing finite tensor basis terms. -/
 theorem mapLabels_sumTerms [Semiring R] {β : Type w} (f : α → β) :
@@ -804,7 +807,7 @@ theorem erase_includeLeftPair [CommSemiring R] (x : LForestTensorAlgebra α R) :
           ForestTripleTensorAlgebra.includeLeftPair (R := R)
             (LForestTensorAlgebra.erase (R := R)
               (LForestTensorAlgebra.ofPair (R := R) term))
-      simp [eraseTripleTermAddHom, PLTree.eraseCoproductTerm, LRootedForest.erase])) x
+      simp [eraseTripleTermAddHom, PLTree.eraseCoproductTerm, LRootedForest.erase]) (by ext)) x
 
 theorem erase_includeRightPair [CommSemiring R] (x : LForestTensorAlgebra α R) :
     erase (R := R) (includeRightPair (R := R) x) =
@@ -825,7 +828,7 @@ theorem erase_includeRightPair [CommSemiring R] (x : LForestTensorAlgebra α R) 
           ForestTripleTensorAlgebra.includeRightPair (R := R)
             (LForestTensorAlgebra.erase (R := R)
               (LForestTensorAlgebra.ofPair (R := R) term))
-      simp [eraseTripleTermAddHom, PLTree.eraseCoproductTerm, LRootedForest.erase])) x
+      simp [eraseTripleTermAddHom, PLTree.eraseCoproductTerm, LRootedForest.erase]) (by ext)) x
 
 theorem constLabel_includeLeftPair [CommSemiring R] (a : α) (x : ForestTensorAlgebra R) :
     constLabel (R := R) a (ForestTripleTensorAlgebra.includeLeftPair (R := R) x) =
@@ -847,7 +850,7 @@ theorem constLabel_includeLeftPair [CommSemiring R] (a : α) (x : ForestTensorAl
             (LForestTensorAlgebra.constLabel (R := R) a
               (ForestTensorAlgebra.ofPair (R := R) term))
       simp [constLabelTripleTermAddHom, PLTree.constLabelCoproductTerm,
-        LRootedForest.constLabel])) x
+        LRootedForest.constLabel]) (by ext)) x
 
 theorem constLabel_includeRightPair [CommSemiring R] (a : α) (x : ForestTensorAlgebra R) :
     constLabel (R := R) a (ForestTripleTensorAlgebra.includeRightPair (R := R) x) =
@@ -869,7 +872,7 @@ theorem constLabel_includeRightPair [CommSemiring R] (a : α) (x : ForestTensorA
             (LForestTensorAlgebra.constLabel (R := R) a
               (ForestTensorAlgebra.ofPair (R := R) term))
       simp [constLabelTripleTermAddHom, PLTree.constLabelCoproductTerm,
-        LRootedForest.constLabel])) x
+        LRootedForest.constLabel]) (by ext)) x
 
 theorem mapLabels_includeLeftPair [CommSemiring R] {β : Type w} (f : α → β)
     (x : LForestTensorAlgebra α R) :
@@ -892,7 +895,7 @@ theorem mapLabels_includeLeftPair [CommSemiring R] {β : Type w} (f : α → β)
             (LForestTensorAlgebra.mapLabels (R := R) f
               (LForestTensorAlgebra.ofPair (R := R) term))
       simp [mapLabelsTripleTermAddHom, PLTree.mapCoproductTerm,
-        LRootedForest.mapLabels])) x
+        LRootedForest.mapLabels]) (by ext)) x
 
 theorem mapLabels_includeRightPair [CommSemiring R] {β : Type w} (f : α → β)
     (x : LForestTensorAlgebra α R) :
@@ -915,7 +918,7 @@ theorem mapLabels_includeRightPair [CommSemiring R] {β : Type w} (f : α → β
             (LForestTensorAlgebra.mapLabels (R := R) f
               (LForestTensorAlgebra.ofPair (R := R) term))
       simp [mapLabelsTripleTermAddHom, PLTree.mapCoproductTerm,
-        LRootedForest.mapLabels])) x
+        LRootedForest.mapLabels]) (by ext)) x
 
 end
 
@@ -2996,7 +2999,7 @@ theorem erase_coproductLeft (x : LForestTensorAlgebra α R) :
               (LForestTensorAlgebra.ofPair (R := R) term))
       simp [erase_includeLeftPair, LRootedForest.erase_coproduct,
         eraseTripleTermAddHom, PLTree.eraseCoproductTerm, LRootedForest.erase, ofForests,
-        ForestTripleTensorAlgebra.ofForests])) x
+        ForestTripleTensorAlgebra.ofForests]) (by ext)) x
 
 theorem erase_coproductRight (x : LForestTensorAlgebra α R) :
     erase (R := R) (coproductRight (R := R) x) =
@@ -3019,7 +3022,7 @@ theorem erase_coproductRight (x : LForestTensorAlgebra α R) :
               (LForestTensorAlgebra.ofPair (R := R) term))
       simp [erase_includeRightPair, LRootedForest.erase_coproduct,
         eraseTripleTermAddHom, PLTree.eraseCoproductTerm, LRootedForest.erase, ofForests,
-        ForestTripleTensorAlgebra.ofForests])) x
+        ForestTripleTensorAlgebra.ofForests]) (by ext)) x
 
 theorem constLabel_coproductLeft (a : α) (x : ForestTensorAlgebra R) :
     constLabel (R := R) a (ForestTripleTensorAlgebra.coproductLeft (R := R) x) =
@@ -3042,7 +3045,7 @@ theorem constLabel_coproductLeft (a : α) (x : ForestTensorAlgebra R) :
               (ForestTensorAlgebra.ofPair (R := R) term))
       simp [constLabel_includeLeftPair, LRootedForest.constLabel_coproduct,
         constLabelTripleTermAddHom, PLTree.constLabelCoproductTerm,
-        LRootedForest.constLabel, ofForests, ForestTripleTensorAlgebra.ofForests])) x
+        LRootedForest.constLabel, ofForests, ForestTripleTensorAlgebra.ofForests]) (by ext)) x
 
 theorem constLabel_coproductRight (a : α) (x : ForestTensorAlgebra R) :
     constLabel (R := R) a (ForestTripleTensorAlgebra.coproductRight (R := R) x) =
@@ -3065,7 +3068,7 @@ theorem constLabel_coproductRight (a : α) (x : ForestTensorAlgebra R) :
               (ForestTensorAlgebra.ofPair (R := R) term))
       simp [constLabel_includeRightPair, LRootedForest.constLabel_coproduct,
         constLabelTripleTermAddHom, PLTree.constLabelCoproductTerm,
-        LRootedForest.constLabel, ofForests, ForestTripleTensorAlgebra.ofForests])) x
+        LRootedForest.constLabel, ofForests, ForestTripleTensorAlgebra.ofForests]) (by ext)) x
 
 theorem mapLabels_coproductLeft {β : Type w} (f : α → β)
     (x : LForestTensorAlgebra α R) :
@@ -3089,7 +3092,7 @@ theorem mapLabels_coproductLeft {β : Type w} (f : α → β)
               (LForestTensorAlgebra.ofPair (R := R) term))
       simp [mapLabels_includeLeftPair, LRootedForest.mapLabels_coproduct,
         mapLabelsTripleTermAddHom, PLTree.mapCoproductTerm, LRootedForest.mapLabels,
-        ofForests])) x
+        ofForests]) (by ext)) x
 
 theorem mapLabels_coproductRight {β : Type w} (f : α → β)
     (x : LForestTensorAlgebra α R) :
@@ -3113,7 +3116,7 @@ theorem mapLabels_coproductRight {β : Type w} (f : α → β)
               (LForestTensorAlgebra.ofPair (R := R) term))
       simp [mapLabels_includeRightPair, LRootedForest.mapLabels_coproduct,
         mapLabelsTripleTermAddHom, PLTree.mapCoproductTerm, LRootedForest.mapLabels,
-        ofForests])) x
+        ofForests]) (by ext)) x
 
 theorem erase_sumTerms_coproductLeftTerms_pltree (t : PLTree α) :
     erase (R := R)
@@ -3414,7 +3417,7 @@ theorem eraseLabels_coproduct (x : LForestAlgebra α R) :
           (coproduct α R (ofForest (R := R) (Multiplicative.toAdd φ))) =
         ForestAlgebra.coproduct R
           (eraseLabels (α := α) R (ofForest (R := R) (Multiplicative.toAdd φ)))
-    simp [LRootedForest.erase_coproduct])) x
+    simp [LRootedForest.erase_coproduct]) (by ext)) x
 
 theorem constLabel_coproduct (a : α) (x : ForestAlgebra R) :
     LForestTensorAlgebra.constLabel (R := R) a (ForestAlgebra.coproduct R x) =
@@ -3431,7 +3434,7 @@ theorem constLabel_coproduct (a : α) (x : ForestAlgebra R) :
           (ForestAlgebra.coproduct R (ForestAlgebra.ofForest (R := R) (Multiplicative.toAdd φ))) =
         coproduct α R
           (constLabel a R (ForestAlgebra.ofForest (R := R) (Multiplicative.toAdd φ)))
-    simp [LRootedForest.constLabel_coproduct])) x
+    simp [LRootedForest.constLabel_coproduct]) (by ext)) x
 
 theorem mapLabels_coproduct {β : Type w} (f : α → β) (x : LForestAlgebra α R) :
     LForestTensorAlgebra.mapLabels (R := R) f (coproduct α R x) =
@@ -3448,7 +3451,7 @@ theorem mapLabels_coproduct {β : Type w} (f : α → β) (x : LForestAlgebra α
           (coproduct α R (ofForest (R := R) (Multiplicative.toAdd φ))) =
         coproduct β R
           (mapLabels (R := R) f (ofForest (R := R) (Multiplicative.toAdd φ)))
-    simp [LRootedForest.mapLabels_coproduct])) x
+    simp [LRootedForest.mapLabels_coproduct]) (by ext)) x
 
 theorem eraseLabels_coproductLeft (x : LForestAlgebra α R) :
     LForestTripleTensorAlgebra.erase (R := R) (coproductLeft α R x) =
@@ -3466,7 +3469,7 @@ theorem eraseLabels_coproductLeft (x : LForestAlgebra α R) :
         ForestAlgebra.coproductLeft R
           (eraseLabels (α := α) R (ofForest (R := R) φ))
     simp [LForestTripleTensorAlgebra.erase_coproductLeft,
-      LRootedForest.erase_coproduct])) x
+      LRootedForest.erase_coproduct]) (by ext)) x
 
 theorem eraseLabels_coproductRight (x : LForestAlgebra α R) :
     LForestTripleTensorAlgebra.erase (R := R) (coproductRight α R x) =
@@ -3484,7 +3487,7 @@ theorem eraseLabels_coproductRight (x : LForestAlgebra α R) :
         ForestAlgebra.coproductRight R
           (eraseLabels (α := α) R (ofForest (R := R) φ))
     simp [LForestTripleTensorAlgebra.erase_coproductRight,
-      LRootedForest.erase_coproduct])) x
+      LRootedForest.erase_coproduct]) (by ext)) x
 
 theorem constLabel_coproductLeft (a : α) (x : ForestAlgebra R) :
     LForestTripleTensorAlgebra.constLabel (R := R) a (ForestAlgebra.coproductLeft R x) =
@@ -3501,7 +3504,7 @@ theorem constLabel_coproductLeft (a : α) (x : ForestAlgebra R) :
           (ForestAlgebra.coproductLeft R (ForestAlgebra.ofForest (R := R) φ)) =
         coproductLeft α R (constLabel a R (ForestAlgebra.ofForest (R := R) φ))
     simp [LForestTripleTensorAlgebra.constLabel_coproductLeft,
-      LRootedForest.constLabel_coproduct])) x
+      LRootedForest.constLabel_coproduct]) (by ext)) x
 
 theorem constLabel_coproductRight (a : α) (x : ForestAlgebra R) :
     LForestTripleTensorAlgebra.constLabel (R := R) a (ForestAlgebra.coproductRight R x) =
@@ -3518,7 +3521,7 @@ theorem constLabel_coproductRight (a : α) (x : ForestAlgebra R) :
           (ForestAlgebra.coproductRight R (ForestAlgebra.ofForest (R := R) φ)) =
         coproductRight α R (constLabel a R (ForestAlgebra.ofForest (R := R) φ))
     simp [LForestTripleTensorAlgebra.constLabel_coproductRight,
-      LRootedForest.constLabel_coproduct])) x
+      LRootedForest.constLabel_coproduct]) (by ext)) x
 
 theorem mapLabels_coproductLeft {β : Type w} (f : α → β)
     (x : LForestAlgebra α R) :
@@ -3536,7 +3539,7 @@ theorem mapLabels_coproductLeft {β : Type w} (f : α → β)
           (coproductLeft α R (ofForest (R := R) φ)) =
         coproductLeft β R (mapLabels (R := R) f (ofForest (R := R) φ))
     simp [LForestTripleTensorAlgebra.mapLabels_coproductLeft,
-      LRootedForest.mapLabels_coproduct])) x
+      LRootedForest.mapLabels_coproduct]) (by ext)) x
 
 theorem mapLabels_coproductRight {β : Type w} (f : α → β)
     (x : LForestAlgebra α R) :
@@ -3554,14 +3557,14 @@ theorem mapLabels_coproductRight {β : Type w} (f : α → β)
           (coproductRight α R (ofForest (R := R) φ)) =
         coproductRight β R (mapLabels (R := R) f (ofForest (R := R) φ))
     simp [LForestTripleTensorAlgebra.mapLabels_coproductRight,
-      LRootedForest.mapLabels_coproduct])) x
+      LRootedForest.mapLabels_coproduct]) (by ext)) x
 
 theorem coproductLeft_eq_coproductRight_of_singletons
     (h : ∀ τ : LRootedTree α,
       coproductLeft α R (ofForest (R := R) (LRootedForest.singleton τ)) =
         coproductRight α R (ofForest (R := R) (LRootedForest.singleton τ))) :
     coproductLeft α R = coproductRight α R := by
-  apply AddMonoidAlgebra.algHom_ext'
+  refine AddMonoidAlgebra.algHom_ext' ?_ (by ext)
   apply MonoidHom.ext
   intro φ
   change
@@ -3710,7 +3713,7 @@ theorem coproductLeft_eq_coproductRight :
 theorem counitLeft_coproduct :
     (LForestTensorAlgebra.counitLeft (R := R)).comp (coproduct α R) =
       AlgHom.id R (LForestAlgebra α R) := by
-  apply AddMonoidAlgebra.algHom_ext'
+  refine AddMonoidAlgebra.algHom_ext' ?_ (by ext)
   apply MonoidHom.ext
   intro φ
   simpa [coproduct, coproductMonoidHom, ofForest] using
@@ -3719,7 +3722,7 @@ theorem counitLeft_coproduct :
 theorem counitRight_coproduct :
     (LForestTensorAlgebra.counitRight (R := R)).comp (coproduct α R) =
       AlgHom.id R (LForestAlgebra α R) := by
-  apply AddMonoidAlgebra.algHom_ext'
+  refine AddMonoidAlgebra.algHom_ext' ?_ (by ext)
   apply MonoidHom.ext
   intro φ
   simpa [coproduct, coproductMonoidHom, ofForest] using

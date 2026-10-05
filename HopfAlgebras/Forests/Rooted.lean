@@ -68,6 +68,7 @@ theorem ForestPerm.cons_eq {t u : PTree} {ts us : List PTree}
     (ht : RootedTree.ofPTree t = RootedTree.ofPTree u) (h : ForestPerm ts us) :
     ForestPerm (t :: ts) (u :: us) := by
   dsimp [ForestPerm] at h ⊢
+  simp only [List.map_cons]
   rw [ht]
   simpa using
     congrArg (fun φ : RootedForest => ({RootedTree.ofPTree u} : RootedForest) + φ) h
@@ -322,14 +323,18 @@ theorem order_graft (φ : RootedForest) :
     RootedTree.order (graft φ) = 1 + order φ := by
   refine Quotient.inductionOn φ ?_
   intro ts
-  simp [graft, order, orderList_out]
+  change RootedTree.order (graft (ts : RootedForest)) = 1 + order (ts : RootedForest)
+  rw [graft_coe]
+  simp [order, orderList_out]
 
 @[simp]
 theorem treeFactorial_graft (φ : RootedForest) :
     RootedTree.treeFactorial (graft φ) = (1 + order φ) * treeFactorial φ := by
   refine Quotient.inductionOn φ ?_
   intro ts
-  simp [graft, order, treeFactorial, orderList_out, treeFactorialList_out]
+  change RootedTree.treeFactorial (graft (ts : RootedForest)) = (1 + order (ts : RootedForest)) * treeFactorial (ts : RootedForest)
+  rw [graft_coe]
+  simp [order, treeFactorial, orderList_out, treeFactorialList_out]
 
 private theorem forall2_out_perm_ofPTree :
     ∀ ts : List PTree,

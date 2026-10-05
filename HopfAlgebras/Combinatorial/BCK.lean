@@ -70,7 +70,7 @@ theorem counitCoeff_eq_boolIte {R : Type v} [CommSemiring R]
 function, linearly in the element. -/
 private noncomputable def pairWith {R : Type v} [CommSemiring R]
     (f : RootedForest → R) : ForestAlgebra R →ₗ[R] R :=
-  Finsupp.linearCombination R f
+  (Finsupp.linearCombination R f).comp (AddMonoidAlgebra.coeffLinearEquiv R).toLinearMap
 
 private theorem pairWith_ofForest {R : Type v} [CommSemiring R]
     (f : RootedForest → R) (ξ : RootedForest) :

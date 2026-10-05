@@ -41,9 +41,10 @@ variable {R : Type u} [CommSemiring R]
 def evalByLinearMaps
     (f g : ForestAlgebra.LinearFunctional R) :
     ForestTensorAlgebra R →ₗ[R] R :=
-  Finsupp.linearCombination R fun term =>
+  (Finsupp.linearCombination R fun term : RootedForest × RootedForest =>
     f (ForestAlgebra.ofForest (R := R) term.1) *
-      g (ForestAlgebra.ofForest (R := R) term.2)
+      g (ForestAlgebra.ofForest (R := R) term.2)).comp
+        (AddMonoidAlgebra.coeffLinearEquiv R).toLinearMap
 
 @[simp]
 theorem evalByLinearMaps_ofPair
@@ -87,7 +88,7 @@ theorem evalByLinearMaps_compAntipode_ofCharacter
   apply LinearMap.ext
   intro x
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : ForestTensorAlgebra R =>
+    (motive := fun x : ForestTensorAlgebra R =>
       evalByLinearMaps
           ((χ : ForestAlgebra R →ₐ[R] R).toLinearMap.comp
             (ForestAlgebra.antipode (R := R)))
@@ -120,7 +121,7 @@ theorem evalByLinearMaps_compRightAntipode_ofCharacter
   apply LinearMap.ext
   intro x
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : ForestTensorAlgebra R =>
+    (motive := fun x : ForestTensorAlgebra R =>
       evalByLinearMaps
           (χ : ForestAlgebra R →ₐ[R] R).toLinearMap
           ((χ : ForestAlgebra R →ₐ[R] R).toLinearMap.comp
@@ -241,7 +242,7 @@ theorem evalForest_sum (fs : List (ForestAlgebra.LinearFunctional R))
 /-- Linear functionals agreeing on every forest monomial are equal. -/
 theorem ext_evalForest {f g : ForestAlgebra.LinearFunctional R}
     (h : ∀ φ, evalForest f φ = evalForest g φ) : f = g := by
-  refine Finsupp.lhom_ext' fun φ => LinearMap.ext_ring ?_
+  refine AddMonoidAlgebra.lhom_ext' fun φ => LinearMap.ext_ring ?_
   exact h φ
 
 /-- Two forest linear functionals agree on all forests of order at most `n`. -/
@@ -305,10 +306,11 @@ variable {R : Type u} [CommSemiring R]
 def evalByLinearMaps
     (f g h : ForestAlgebra.LinearFunctional R) :
     ForestTripleTensorAlgebra R →ₗ[R] R :=
-  Finsupp.linearCombination R fun term =>
+  (Finsupp.linearCombination R fun term : RootedForest × RootedForest × RootedForest =>
     f (ForestAlgebra.ofForest (R := R) term.1) *
       g (ForestAlgebra.ofForest (R := R) term.2.1) *
-        h (ForestAlgebra.ofForest (R := R) term.2.2)
+        h (ForestAlgebra.ofForest (R := R) term.2.2)).comp
+          (AddMonoidAlgebra.coeffLinearEquiv R).toLinearMap
 
 @[simp]
 theorem evalByLinearMaps_ofTriple
@@ -386,7 +388,7 @@ theorem evalByLinearMaps_coproductLeft
       ForestTensorAlgebra.evalByLinearMaps
         (ForestAlgebra.LinearFunctional.convolution f g) h x := by
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : ForestTensorAlgebra R =>
+    (motive := fun x : ForestTensorAlgebra R =>
       evalByLinearMaps f g h (coproductLeft (R := R) x) =
         ForestTensorAlgebra.evalByLinearMaps
           (ForestAlgebra.LinearFunctional.convolution f g) h x) x ?_ ?_ ?_
@@ -409,7 +411,7 @@ theorem evalByLinearMaps_coproductRight
       ForestTensorAlgebra.evalByLinearMaps
         f (ForestAlgebra.LinearFunctional.convolution g h) x := by
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : ForestTensorAlgebra R =>
+    (motive := fun x : ForestTensorAlgebra R =>
       evalByLinearMaps f g h (coproductRight (R := R) x) =
         ForestTensorAlgebra.evalByLinearMaps
           f (ForestAlgebra.LinearFunctional.convolution g h) x) x ?_ ?_ ?_
@@ -445,7 +447,7 @@ private theorem evalByLinearMaps_counit_left
   apply LinearMap.ext
   intro x
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : ForestTensorAlgebra R =>
+    (motive := fun x : ForestTensorAlgebra R =>
       ForestTensorAlgebra.evalByLinearMaps (counit R) f x =
         (f.comp (ForestTensorAlgebra.counitLeft (R := R)).toLinearMap) x) x ?_ ?_ ?_
   · intro term
@@ -467,7 +469,7 @@ private theorem evalByLinearMaps_counit_right
   apply LinearMap.ext
   intro x
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : ForestTensorAlgebra R =>
+    (motive := fun x : ForestTensorAlgebra R =>
       ForestTensorAlgebra.evalByLinearMaps f (counit R) x =
         (f.comp (ForestTensorAlgebra.counitRight (R := R)).toLinearMap) x) x ?_ ?_ ?_
   · intro term
@@ -525,7 +527,7 @@ theorem convolution_zero_left
   apply LinearMap.ext
   intro x
   exact AddMonoidAlgebra.induction_on (x := x)
-    (p := fun y : ForestAlgebra R => convolution 0 f y = 0)
+    (motive := fun y : ForestAlgebra R => convolution 0 f y = 0)
     (by
       intro φ
       change convolution 0 f (ForestAlgebra.ofForest (R := R) φ) = 0
@@ -547,7 +549,7 @@ theorem convolution_zero_right
   apply LinearMap.ext
   intro x
   exact AddMonoidAlgebra.induction_on (x := x)
-    (p := fun y : ForestAlgebra R => convolution f 0 y = 0)
+    (motive := fun y : ForestAlgebra R => convolution f 0 y = 0)
     (by
       intro φ
       change convolution f 0 (ForestAlgebra.ofForest (R := R) φ) = 0
@@ -839,9 +841,10 @@ variable {α : Type u} {R : Type v} [CommSemiring R]
 def evalByLinearMaps
     (f g : LForestAlgebra.LinearFunctional α R) :
     LForestTensorAlgebra α R →ₗ[R] R :=
-  Finsupp.linearCombination R fun term =>
+  (Finsupp.linearCombination R fun term : LRootedForest α × LRootedForest α =>
     f (LForestAlgebra.ofForest (R := R) term.1) *
-      g (LForestAlgebra.ofForest (R := R) term.2)
+      g (LForestAlgebra.ofForest (R := R) term.2)).comp
+        (AddMonoidAlgebra.coeffLinearEquiv R).toLinearMap
 
 @[simp]
 theorem evalByLinearMaps_ofPair
@@ -881,7 +884,7 @@ theorem evalByLinearMaps_erase
         (f.comp (LForestAlgebra.eraseLabels (α := α) R).toLinearMap)
         (g.comp (LForestAlgebra.eraseLabels (α := α) R).toLinearMap) x := by
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : LForestTensorAlgebra α R =>
+    (motive := fun x : LForestTensorAlgebra α R =>
       ForestTensorAlgebra.evalByLinearMaps f g (erase (R := R) x) =
         evalByLinearMaps
           (f.comp (LForestAlgebra.eraseLabels (α := α) R).toLinearMap)
@@ -901,11 +904,8 @@ theorem evalByLinearMaps_erase
     simpa [map_add] using congrArg₂ (fun a b => a + b) hx hy
   · intro c x hx
     rw [show erase (R := R) (c • x) = c • erase (R := R) x by
-      change
-        Finsupp.mapDomain (⇑(eraseTermAddHom (α := α))) (c • x) =
-          c • Finsupp.mapDomain (⇑(eraseTermAddHom (α := α))) x
-      exact Finsupp.mapDomain_smul
-        (f := (eraseTermAddHom (α := α) : _ → _)) (b := c) (v := x)]
+      ext term
+      simp [erase, Finsupp.mapDomain_smul]]
     simp [hx]
 
 theorem evalByLinearMaps_constLabel
@@ -915,7 +915,7 @@ theorem evalByLinearMaps_constLabel
         (f.comp (LForestAlgebra.constLabel a R).toLinearMap)
         (g.comp (LForestAlgebra.constLabel a R).toLinearMap) x := by
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : ForestTensorAlgebra R =>
+    (motive := fun x : ForestTensorAlgebra R =>
       evalByLinearMaps f g (constLabel (R := R) a x) =
         ForestTensorAlgebra.evalByLinearMaps
           (f.comp (LForestAlgebra.constLabel a R).toLinearMap)
@@ -935,11 +935,8 @@ theorem evalByLinearMaps_constLabel
     simpa [map_add] using congrArg₂ (fun a b => a + b) hx hy
   · intro c x hx
     rw [show constLabel (R := R) a (c • x) = c • constLabel (R := R) a x by
-      change
-        Finsupp.mapDomain (⇑(constLabelTermAddHom a)) (c • x) =
-          c • Finsupp.mapDomain (⇑(constLabelTermAddHom a)) x
-      exact Finsupp.mapDomain_smul
-        (f := (constLabelTermAddHom a : _ → _)) (b := c) (v := x)]
+      ext term
+      simp [constLabel, Finsupp.mapDomain_smul]]
     simp [hx]
 
 theorem evalByLinearMaps_mapLabels {β : Type w} (labelMap : α → β)
@@ -949,7 +946,7 @@ theorem evalByLinearMaps_mapLabels {β : Type w} (labelMap : α → β)
         (f.comp (LForestAlgebra.mapLabels (R := R) labelMap).toLinearMap)
         (g.comp (LForestAlgebra.mapLabels (R := R) labelMap).toLinearMap) x := by
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : LForestTensorAlgebra α R =>
+    (motive := fun x : LForestTensorAlgebra α R =>
       LForestTensorAlgebra.evalByLinearMaps f g (mapLabels (R := R) labelMap x) =
         evalByLinearMaps
           (f.comp (LForestAlgebra.mapLabels (R := R) labelMap).toLinearMap)
@@ -970,14 +967,8 @@ theorem evalByLinearMaps_mapLabels {β : Type w} (labelMap : α → β)
   · intro c x hx
     rw [show mapLabels (R := R) labelMap (c • x) =
         c • mapLabels (R := R) labelMap x by
-      change
-        Finsupp.mapDomain
-            (⇑(mapLabelsTermAddHom (α := α) labelMap)) (c • x) =
-          c • Finsupp.mapDomain
-            (⇑(mapLabelsTermAddHom (α := α) labelMap)) x
-      exact Finsupp.mapDomain_smul (f :=
-        (mapLabelsTermAddHom (α := α) labelMap : _ → _))
-        (b := c) (v := x)]
+      ext term
+      simp [mapLabels, Finsupp.mapDomain_smul]]
     simp [hx]
 
 theorem evalByLinearMaps_compAntipode_ofCharacter
@@ -992,7 +983,7 @@ theorem evalByLinearMaps_compAntipode_ofCharacter
   apply LinearMap.ext
   intro x
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : LForestTensorAlgebra α R =>
+    (motive := fun x : LForestTensorAlgebra α R =>
       evalByLinearMaps
           ((χ : LForestAlgebra α R →ₐ[R] R).toLinearMap.comp
             (LForestAlgebra.antipode (R := R)))
@@ -1026,7 +1017,7 @@ theorem evalByLinearMaps_compRightAntipode_ofCharacter
   apply LinearMap.ext
   intro x
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : LForestTensorAlgebra α R =>
+    (motive := fun x : LForestTensorAlgebra α R =>
       evalByLinearMaps
           (χ : LForestAlgebra α R →ₐ[R] R).toLinearMap
           ((χ : LForestAlgebra α R →ₐ[R] R).toLinearMap.comp
@@ -1457,10 +1448,11 @@ variable {α : Type u} {R : Type v} [CommSemiring R]
 def evalByLinearMaps
     (f g h : LForestAlgebra.LinearFunctional α R) :
     LForestTripleTensorAlgebra α R →ₗ[R] R :=
-  Finsupp.linearCombination R fun term =>
+  (Finsupp.linearCombination R fun term : LRootedForest α × LRootedForest α × LRootedForest α =>
     f (LForestAlgebra.ofForest (R := R) term.1) *
       g (LForestAlgebra.ofForest (R := R) term.2.1) *
-        h (LForestAlgebra.ofForest (R := R) term.2.2)
+        h (LForestAlgebra.ofForest (R := R) term.2.2)).comp
+          (AddMonoidAlgebra.coeffLinearEquiv R).toLinearMap
 
 @[simp]
 theorem evalByLinearMaps_ofTriple
@@ -1539,7 +1531,7 @@ theorem evalByLinearMaps_coproductLeft
       LForestTensorAlgebra.evalByLinearMaps
         (LForestAlgebra.LinearFunctional.convolution f g) h x := by
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : LForestTensorAlgebra α R =>
+    (motive := fun x : LForestTensorAlgebra α R =>
       evalByLinearMaps f g h (coproductLeft (R := R) x) =
         LForestTensorAlgebra.evalByLinearMaps
           (LForestAlgebra.LinearFunctional.convolution f g) h x) x ?_ ?_ ?_
@@ -1562,7 +1554,7 @@ theorem evalByLinearMaps_coproductRight
       LForestTensorAlgebra.evalByLinearMaps
         f (LForestAlgebra.LinearFunctional.convolution g h) x := by
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : LForestTensorAlgebra α R =>
+    (motive := fun x : LForestTensorAlgebra α R =>
       evalByLinearMaps f g h (coproductRight (R := R) x) =
         LForestTensorAlgebra.evalByLinearMaps
           f (LForestAlgebra.LinearFunctional.convolution g h) x) x ?_ ?_ ?_
@@ -1598,7 +1590,7 @@ private theorem evalByLinearMaps_counit_left
   apply LinearMap.ext
   intro x
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : LForestTensorAlgebra α R =>
+    (motive := fun x : LForestTensorAlgebra α R =>
       LForestTensorAlgebra.evalByLinearMaps (counit α R) f x =
         (f.comp (LForestTensorAlgebra.counitLeft (R := R)).toLinearMap) x) x ?_ ?_ ?_
   · intro term
@@ -1622,7 +1614,7 @@ private theorem evalByLinearMaps_counit_right
   apply LinearMap.ext
   intro x
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : LForestTensorAlgebra α R =>
+    (motive := fun x : LForestTensorAlgebra α R =>
       LForestTensorAlgebra.evalByLinearMaps f (counit α R) x =
         (f.comp (LForestTensorAlgebra.counitRight (R := R)).toLinearMap) x) x ?_ ?_ ?_
   · intro term
@@ -1682,7 +1674,7 @@ theorem convolution_zero_left
   apply LinearMap.ext
   intro x
   exact AddMonoidAlgebra.induction_on (x := x)
-    (p := fun y : LForestAlgebra α R => convolution 0 f y = 0)
+    (motive := fun y : LForestAlgebra α R => convolution 0 f y = 0)
     (by
       intro φ
       change convolution 0 f (LForestAlgebra.ofForest (R := R) φ) = 0
@@ -1704,7 +1696,7 @@ theorem convolution_zero_right
   apply LinearMap.ext
   intro x
   exact AddMonoidAlgebra.induction_on (x := x)
-    (p := fun y : LForestAlgebra α R => convolution f 0 y = 0)
+    (motive := fun y : LForestAlgebra α R => convolution f 0 y = 0)
     (by
       intro φ
       change convolution f 0 (LForestAlgebra.ofForest (R := R) φ) = 0

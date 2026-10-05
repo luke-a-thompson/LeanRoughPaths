@@ -780,7 +780,7 @@ private theorem filterMap_rootCutList_noPrunedTrunks_map {β : Type u}
   | c :: cuts => by
       cases c with
       | mk pruned trunks =>
-          cases pruned <;> simp [RootCutList.noPrunedTrunks?,
+          cases pruned <;> simp [List.filterMap_cons, RootCutList.noPrunedTrunks?,
             filterMap_rootCutList_noPrunedTrunks_map f cuts]
 
 private theorem flatMap_rootCut_noPrunedTrunk_singleton {β : Type u}
@@ -808,7 +808,7 @@ theorem rootCuts_noPrunedTrunks :
       have h := filterMap_rootCutList_noPrunedTrunks_map (fun trunks => PLTree.node a trunks)
         (rootCutsList ts)
       rw [rootCutsList_noPrunedTrunks] at h
-      simpa [Function.comp, RootCut.noPrunedTrunk?, RootCutList.noPrunedTrunks?] using h
+      simpa [Function.comp_def, RootCut.noPrunedTrunk?, RootCutList.noPrunedTrunks?] using h
 
 /-- Exactly one labelled child cut choice prunes no trees: the choice keeping the whole child. -/
 theorem childCuts_noPrunedTrunks (t : PLTree α) :
@@ -845,7 +845,7 @@ theorem rootCutsList_noPrunedTrunks :
               filterMap_rootCutList_noPrunedTrunks_map (fun trunks => c.trunk :: trunks)
                 (rootCutsList ts)
             rw [rootCutsList_noPrunedTrunks] at h
-            simpa [RootCutList.noPrunedTrunks?, RootCut.noPrunedTrunk?, hcpruned] using h
+            simpa [Function.comp_def, RootCutList.noPrunedTrunks?, RootCut.noPrunedTrunk?, hcpruned] using h
         | cons p ps =>
             simp [RootCutList.noPrunedTrunks?, RootCut.noPrunedTrunk?, hcpruned]
       rw [List.filterMap_append, List.filterMap_flatMap]

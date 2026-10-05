@@ -646,7 +646,7 @@ theorem evalByLinearMaps_ofCharacter (χ ψ : LForestAlgebra.Character α R) :
   apply LinearMap.ext
   intro x
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : LForestTensorAlgebra α R =>
+    (motive := fun x : LForestTensorAlgebra α R =>
       evalByLinearMaps
           (LForestAlgebra.LinearFunctional.ofCharacter χ)
           (LForestAlgebra.LinearFunctional.ofCharacter ψ) x =
@@ -759,7 +759,7 @@ theorem evalByCharacters_includeLeftPair
             (includeLeftPair (R := R) (LForestTensorAlgebra.ofPair (R := R) term)) =
           LForestTensorAlgebra.evalByCharacters χ ψ
             (LForestTensorAlgebra.ofPair (R := R) term)
-      simp [PLTree.evalTripleCoproductTerm, PLTree.evalCoproductTerm])) x
+      simp [PLTree.evalTripleCoproductTerm, PLTree.evalCoproductTerm]) (by ext)) x
 
 @[simp]
 theorem evalByCharacters_includeRightPair
@@ -777,7 +777,7 @@ theorem evalByCharacters_includeRightPair
             (includeRightPair (R := R) (LForestTensorAlgebra.ofPair (R := R) term)) =
           LForestTensorAlgebra.evalByCharacters ψ η
             (LForestTensorAlgebra.ofPair (R := R) term)
-      simp [PLTree.evalTripleCoproductTerm, PLTree.evalCoproductTerm])) x
+      simp [PLTree.evalTripleCoproductTerm, PLTree.evalCoproductTerm]) (by ext)) x
 
 end
 
@@ -837,6 +837,10 @@ theorem convolutionCoeff_comapEraseLabels
       RootedForest.convolutionCoeff χ ψ (LRootedForest.erase φ) := by
   refine Quotient.inductionOn φ ?_
   intro ts
+  change convolutionCoeff
+      (LForestAlgebra.Character.comapEraseLabels (α := α) χ)
+      (LForestAlgebra.Character.comapEraseLabels (α := α) ψ) (ts : LRootedForest α) =
+    RootedForest.convolutionCoeff χ ψ (LRootedForest.erase (ts : LRootedForest α))
   rw [convolutionCoeff, RootedForest.convolutionCoeff]
   change
     LForestTensorAlgebra.evalByCharacters
@@ -864,6 +868,9 @@ theorem convolutionCoeff_comapMapLabels {β : Type w}
       LRootedForest.convolutionCoeff χ ψ (LRootedForest.mapLabels f φ) := by
   refine Quotient.inductionOn φ ?_
   intro ts
+  change convolutionCoeff (LForestAlgebra.Character.comapMapLabels f χ)
+      (LForestAlgebra.Character.comapMapLabels f ψ) (ts : LRootedForest α) =
+    convolutionCoeff χ ψ (LRootedForest.mapLabels f (ts : LRootedForest α))
   rw [convolutionCoeff, convolutionCoeff]
   change
     LForestTensorAlgebra.evalByCharacters
@@ -888,6 +895,8 @@ theorem convolutionCoeff_unit_right (χ : LForestAlgebra.Character α R)
     convolutionCoeff χ (LForestAlgebra.counit α R) φ = χ.evalForest φ := by
   refine Quotient.inductionOn φ ?_
   intro ts
+  change convolutionCoeff χ (LForestAlgebra.counit α R) (ts : LRootedForest α) =
+    χ.evalForest (ts : LRootedForest α)
   rw [convolutionCoeff]
   change
     LForestTensorAlgebra.evalByCharacters χ (LForestAlgebra.counit α R)
@@ -908,6 +917,8 @@ theorem convolutionCoeff_unit_left (χ : LForestAlgebra.Character α R)
     convolutionCoeff (LForestAlgebra.counit α R) χ φ = χ.evalForest φ := by
   refine Quotient.inductionOn φ ?_
   intro ts
+  change convolutionCoeff (LForestAlgebra.counit α R) χ (ts : LRootedForest α) =
+    χ.evalForest (ts : LRootedForest α)
   rw [convolutionCoeff]
   change
     LForestTensorAlgebra.evalByCharacters (LForestAlgebra.counit α R) χ
@@ -941,6 +952,9 @@ theorem convolutionCoeff_comapConstLabel
       LRootedForest.convolutionCoeff χ ψ (LRootedForest.constLabel x φ) := by
   refine Quotient.inductionOn φ ?_
   intro ts
+  change convolutionCoeff (LForestAlgebra.Character.comapConstLabel x χ)
+      (LForestAlgebra.Character.comapConstLabel x ψ) (ts : RootedForest) =
+    LRootedForest.convolutionCoeff χ ψ (LRootedForest.constLabel x (ts : RootedForest))
   rw [convolutionCoeff, LRootedForest.convolutionCoeff]
   change
     ForestTensorAlgebra.evalByCharacters
@@ -1116,13 +1130,8 @@ theorem convolution_comapEraseLabels
         (comapEraseLabels (α := α) χ)
         (comapEraseLabels (α := α) ψ) =
       comapEraseLabels (α := α) (ForestAlgebra.Character.convolution χ ψ) := by
-  ext τ
-  change
-    (convolution
-        (comapEraseLabels (α := α) χ)
-        (comapEraseLabels (α := α) ψ)).evalForest (LRootedForest.singleton τ) =
-      (comapEraseLabels (α := α) (ForestAlgebra.Character.convolution χ ψ)).evalForest
-        (LRootedForest.singleton τ)
+  apply LForestAlgebra.Character.ext
+  intro φ
   rw [convolution_evalForest, comapEraseLabels_evalForest,
     ForestAlgebra.Character.convolution_ofForest,
     LRootedForest.convolutionCoeff_comapEraseLabels]
@@ -1131,11 +1140,8 @@ theorem convolution_comapMapLabels {β : Type w}
     (f : α → β) (χ ψ : Character β R) :
     convolution (comapMapLabels f χ) (comapMapLabels f ψ) =
       comapMapLabels f (convolution χ ψ) := by
-  ext τ
-  change
-    (convolution (comapMapLabels f χ) (comapMapLabels f ψ)).evalForest
-        (LRootedForest.singleton τ) =
-      (comapMapLabels f (convolution χ ψ)).evalForest (LRootedForest.singleton τ)
+  apply LForestAlgebra.Character.ext
+  intro φ
   rw [convolution_evalForest, comapMapLabels_evalForest, convolution_evalForest,
     LRootedForest.convolutionCoeff_comapMapLabels]
 
@@ -1189,21 +1195,15 @@ theorem labelInvariantEquiv_symm_convolution [Nonempty α]
 theorem convolution_unit_right (χ : Character α R) :
     convolution χ (unit α R) = χ := by
   change convolution χ (LForestAlgebra.counit α R) = χ
-  ext τ
-  change
-    (convolution χ (LForestAlgebra.counit α R)).evalForest
-        (LRootedForest.singleton τ) =
-      χ.evalForest (LRootedForest.singleton τ)
+  apply LForestAlgebra.Character.ext
+  intro φ
   rw [convolution_evalForest, LRootedForest.convolutionCoeff_unit_right]
 
 theorem convolution_unit_left (χ : Character α R) :
     convolution (unit α R) χ = χ := by
   change convolution (LForestAlgebra.counit α R) χ = χ
-  ext τ
-  change
-    (convolution (LForestAlgebra.counit α R) χ).evalForest
-        (LRootedForest.singleton τ) =
-      χ.evalForest (LRootedForest.singleton τ)
+  apply LForestAlgebra.Character.ext
+  intro φ
   rw [convolution_evalForest, LRootedForest.convolutionCoeff_unit_left]
 
 theorem linearFunctional_convolution_compAntipode_ofCharacter_left
@@ -1280,7 +1280,7 @@ theorem evalByCharacters_coproductLeft
           LForestTensorAlgebra.evalByCharacters (convolution χ ψ) η
             (LForestTensorAlgebra.ofPair (R := R) term)
       simp [LForestTripleTensorAlgebra.ofForests, PLTree.evalTripleCoproductTerm,
-        PLTree.evalCoproductTerm, convolution, LForestAlgebra.Character.evalForest])) x
+        PLTree.evalCoproductTerm, convolution, LForestAlgebra.Character.evalForest]) (by ext)) x
 
 theorem evalByCharacters_coproductRight
     (χ ψ η : Character α R) (x : LForestTensorAlgebra α R) :
@@ -1301,7 +1301,7 @@ theorem evalByCharacters_coproductRight
           LForestTensorAlgebra.evalByCharacters χ (convolution ψ η)
             (LForestTensorAlgebra.ofPair (R := R) term)
       simp [LForestTripleTensorAlgebra.ofForests, PLTree.evalTripleCoproductTerm,
-        PLTree.evalCoproductTerm, convolution, LForestAlgebra.Character.evalForest])) x
+        PLTree.evalCoproductTerm, convolution, LForestAlgebra.Character.evalForest]) (by ext)) x
 
 theorem evalByCharacters_forestCoproductLeft
     (χ ψ η : Character α R) (x : LForestAlgebra α R) :

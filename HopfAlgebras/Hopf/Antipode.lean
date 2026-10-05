@@ -5,6 +5,7 @@ Authors: Daniil Shmelev
 -/
 import HopfAlgebras.Hopf.Coproduct
 import HopfAlgebras.Util.List
+import Mathlib.Algebra.MonoidAlgebra.Module
 
 /-!
 # The BCK Antipode
@@ -197,9 +198,10 @@ variable {R : Type u} [CommRing R]
 /-- Evaluate a tensor term by applying the recursive antipode to the left factor
 and multiplying in the forest algebra. -/
 noncomputable def antipodeLeft : ForestTensorAlgebra R →ₗ[R] ForestAlgebra R :=
-  Finsupp.linearCombination R fun term =>
+  (Finsupp.linearCombination R fun term : RootedForest × RootedForest =>
     RootedForest.antipode (R := R) term.1 *
-      ForestAlgebra.ofForest (R := R) term.2
+      ForestAlgebra.ofForest (R := R) term.2).comp
+    (AddMonoidAlgebra.coeffLinearEquiv R).toLinearMap
 
 @[simp]
 theorem antipodeLeft_ofPair (term : RootedForest × RootedForest) :
@@ -240,9 +242,10 @@ theorem evalCharacter_antipodeLeft_sumTerms (χ : ForestAlgebra.Character R)
 /-- Evaluate a tensor term by applying the right-recursive antipode to the right factor
 and multiplying in the forest algebra. -/
 noncomputable def antipodeRight : ForestTensorAlgebra R →ₗ[R] ForestAlgebra R :=
-  Finsupp.linearCombination R fun term =>
+  (Finsupp.linearCombination R fun term : RootedForest × RootedForest =>
     ForestAlgebra.ofForest (R := R) term.1 *
-      RootedForest.rightAntipode (R := R) term.2
+      RootedForest.rightAntipode (R := R) term.2).comp
+    (AddMonoidAlgebra.coeffLinearEquiv R).toLinearMap
 
 @[simp]
 theorem antipodeRight_ofPair (term : RootedForest × RootedForest) :
@@ -588,7 +591,8 @@ variable {R : Type u} [CommRing R]
 
 /-- The linear extension of the recursive antipode to the rooted-forest algebra. -/
 noncomputable def antipode : ForestAlgebra R →ₗ[R] ForestAlgebra R :=
-  Finsupp.linearCombination R (RootedForest.antipode (R := R))
+  (Finsupp.linearCombination R (RootedForest.antipode (R := R))).comp
+    (AddMonoidAlgebra.coeffLinearEquiv R).toLinearMap
 
 @[simp]
 theorem antipode_ofForest (φ : RootedForest) :
@@ -612,7 +616,7 @@ theorem counit_antipode (x : ForestAlgebra R) :
     ForestAlgebra.counit R (antipode (R := R) x) = ForestAlgebra.counit R x := by
   classical
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : ForestAlgebra R =>
+    (motive := fun x : ForestAlgebra R =>
       ForestAlgebra.counit R (antipode (R := R) x) = ForestAlgebra.counit R x) x ?_ ?_ ?_
   · intro φ
     change
@@ -626,7 +630,8 @@ theorem counit_antipode (x : ForestAlgebra R) :
 
 /-- The linear extension of the right-recursive antipode to the rooted-forest algebra. -/
 noncomputable def rightAntipode : ForestAlgebra R →ₗ[R] ForestAlgebra R :=
-  Finsupp.linearCombination R (RootedForest.rightAntipode (R := R))
+  (Finsupp.linearCombination R (RootedForest.rightAntipode (R := R))).comp
+    (AddMonoidAlgebra.coeffLinearEquiv R).toLinearMap
 
 @[simp]
 theorem rightAntipode_ofForest (φ : RootedForest) :
@@ -650,7 +655,7 @@ theorem counit_rightAntipode (x : ForestAlgebra R) :
     ForestAlgebra.counit R (rightAntipode (R := R) x) = ForestAlgebra.counit R x := by
   classical
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : ForestAlgebra R =>
+    (motive := fun x : ForestAlgebra R =>
       ForestAlgebra.counit R (rightAntipode (R := R) x) = ForestAlgebra.counit R x) x ?_ ?_ ?_
   · intro φ
     change
@@ -669,7 +674,7 @@ theorem antipodeLeft_coproduct (x : ForestAlgebra R) :
       ForestAlgebra.counit R x • (1 : ForestAlgebra R) := by
   classical
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : ForestAlgebra R =>
+    (motive := fun x : ForestAlgebra R =>
       ForestTensorAlgebra.antipodeLeft (R := R) (ForestAlgebra.coproduct R x) =
         ForestAlgebra.counit R x • (1 : ForestAlgebra R)) x ?_ ?_ ?_
   · intro φ
@@ -690,7 +695,7 @@ theorem antipodeRight_coproduct (x : ForestAlgebra R) :
       ForestAlgebra.counit R x • (1 : ForestAlgebra R) := by
   classical
   refine AddMonoidAlgebra.induction_on
-    (p := fun x : ForestAlgebra R =>
+    (motive := fun x : ForestAlgebra R =>
       ForestTensorAlgebra.antipodeRight (R := R) (ForestAlgebra.coproduct R x) =
         ForestAlgebra.counit R x • (1 : ForestAlgebra R)) x ?_ ?_ ?_
   · intro φ

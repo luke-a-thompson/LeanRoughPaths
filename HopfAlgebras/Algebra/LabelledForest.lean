@@ -158,7 +158,7 @@ theorem mapLabels_ofForest_zero [CommSemiring R] (f : α → β) :
 @[simp]
 theorem mapLabels_id [CommSemiring R] :
     mapLabels (R := R) (fun a : α => a) = AlgHom.id R (LForestAlgebra α R) := by
-  apply AddMonoidAlgebra.algHom_ext'
+  refine AddMonoidAlgebra.algHom_ext' ?_ (by ext x)
   apply MonoidHom.ext
   intro φ
   change
@@ -171,7 +171,7 @@ theorem mapLabels_id [CommSemiring R] :
 theorem mapLabels_comp [CommSemiring R] (g : β → γ) (f : α → β) :
     (mapLabels (R := R) g).comp (mapLabels (R := R) f) =
       mapLabels (R := R) (g ∘ f) := by
-  apply AddMonoidAlgebra.algHom_ext'
+  refine AddMonoidAlgebra.algHom_ext' ?_ (by ext x)
   apply MonoidHom.ext
   intro φ
   change
@@ -184,7 +184,7 @@ theorem mapLabels_comp [CommSemiring R] (g : β → γ) (f : α → β) :
 theorem eraseLabels_comp_mapLabels [CommSemiring R] (f : α → β) :
     (eraseLabels (α := β) R).comp (mapLabels (R := R) f) =
       eraseLabels (α := α) R := by
-  apply AddMonoidAlgebra.algHom_ext'
+  refine AddMonoidAlgebra.algHom_ext' ?_ (by ext x)
   apply MonoidHom.ext
   intro φ
   change
@@ -197,7 +197,7 @@ theorem eraseLabels_comp_mapLabels [CommSemiring R] (f : α → β) :
 theorem eraseLabels_comp_constLabel [CommSemiring R] (a : α) :
     (eraseLabels (α := α) R).comp (constLabel a R) =
       AlgHom.id R (ForestAlgebra R) := by
-  apply AddMonoidAlgebra.algHom_ext'
+  refine AddMonoidAlgebra.algHom_ext' ?_ (by ext x)
   apply MonoidHom.ext
   intro φ
   change
@@ -224,7 +224,7 @@ theorem constLabel_eq_constLabel_iff [CommSemiring R] (a : α) {x y : ForestAlge
 theorem mapLabels_comp_constLabel [CommSemiring R] (f : α → β) (a : α) :
     (mapLabels (R := R) f).comp (constLabel a R) =
       constLabel (f a) R := by
-  apply AddMonoidAlgebra.algHom_ext'
+  refine AddMonoidAlgebra.algHom_ext' ?_ (by ext x)
   apply MonoidHom.ext
   intro φ
   change
@@ -335,7 +335,7 @@ theorem counit_ofForest_ne_zero [CommSemiring R] {φ : LRootedForest α} (hφ : 
 
 theorem counit_comp_mapLabels [CommSemiring R] (f : α → β) :
     (counit β R).comp (mapLabels (R := R) f) = counit α R := by
-  apply AddMonoidAlgebra.algHom_ext'
+  refine AddMonoidAlgebra.algHom_ext' ?_ (by ext x)
   apply MonoidHom.ext
   intro φ
   change
@@ -345,7 +345,7 @@ theorem counit_comp_mapLabels [CommSemiring R] (f : α → β) :
 
 theorem counit_comp_eraseLabels [CommSemiring R] :
     (ForestAlgebra.counit R).comp (eraseLabels (α := α) R) = counit α R := by
-  apply AddMonoidAlgebra.algHom_ext'
+  refine AddMonoidAlgebra.algHom_ext' ?_ (by ext x)
   apply MonoidHom.ext
   intro φ
   change
@@ -398,7 +398,7 @@ theorem evalForest_ofPLTree_list_forall₂_perm (χ : Character α R)
 @[ext]
 theorem ext {χ ψ : Character α R} (h : ∀ φ, χ.evalForest φ = ψ.evalForest φ) :
     χ = ψ := by
-  apply AddMonoidAlgebra.algHom_ext'
+  refine AddMonoidAlgebra.algHom_ext' ?_ (by ext x)
   apply MonoidHom.ext
   intro φ
   change
