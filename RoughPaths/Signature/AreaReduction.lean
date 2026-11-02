@@ -13,30 +13,22 @@ no tree structure or numerical method is assumed.
 
 namespace RoughPaths.AreaReduction
 
-/-- A rational linear combination of moment monomials. -/
-inductive Poly (α : Type*) where
-  | zero
-  | monomial (ts : List α)
-  | add (p q : Poly α)
-  | scale (c : ℚ) (p : Poly α)
+open HopfAlgebras.Word.Polynomial
+
+/-- Moment polynomials use Mathlib's free rational module on monomials. -/
+abbrev Poly := HopfAlgebras.Word.Polynomial
+
+noncomputable section
 
 namespace Poly
 
-variable {α : Type*}
+abbrev monomial {α : Type*} := word (α := α)
 
-@[simp] def eval {R : Type*} [CommRing R] [Algebra ℚ R] (X : α → R) : Poly α → R
-  | .zero => 0
-  | .monomial ts => (ts.map X).prod
-  | .add p q => eval X p + eval X q
-  | .scale c p => (algebraMap ℚ R c) * eval X p
+def eval {α R : Type*} [CommRing R] [Algebra ℚ R] (X : α → R) : Poly α →ₗ[ℚ] R :=
+  lift (fun ts => (ts.map X).prod)
 
-def sum : List (Poly α) → Poly α := List.foldr .add .zero
-
-@[simp] theorem eval_sum {R : Type*} [CommRing R] [Algebra ℚ R] (X : α → R)
-    (ps : List (Poly α)) : eval X (sum ps) = (ps.map (eval X)).sum := by
-  induction ps with
-  | nil => rfl
-  | cons p ps ih => simpa [sum, eval] using congrArg (eval X p + ·) ih
+@[simp] theorem eval_monomial {α R : Type*} [CommRing R] [Algebra ℚ R]
+    (X : α → R) (ts : List α) : eval X (monomial ts) = (ts.map X).prod := lift_word _ _
 
 end Poly
 
@@ -53,17 +45,12 @@ def dmonomial {R : Type*} [CommRing R] (X V : α → R) : List α → R
   | [] => 0
   | t :: ts => V t * (ts.map X).prod + X t * dmonomial X V ts
 
-@[simp] def Poly.diff {R : Type*} [CommRing R] [Algebra ℚ R] (X V : α → R) : Poly α → R
-  | .zero => 0
-  | .monomial ts => dmonomial X V ts
-  | .add p q => p.diff X V + q.diff X V
-  | .scale c p => (algebraMap ℚ R c) * p.diff X V
+def Poly.diff {R : Type*} [CommRing R] [Algebra ℚ R] (X V : α → R) : Poly α →ₗ[ℚ] R :=
+  lift (dmonomial X V)
 
-@[simp] theorem Poly.diff_sum {R : Type*} [CommRing R] [Algebra ℚ R] (X V : α → R)
-    (ps : List (Poly α)) : (Poly.sum ps).diff X V = (ps.map (Poly.diff X V)).sum := by
-  induction ps with
-  | nil => rfl
-  | cons p ps ih => simpa [Poly.sum, Poly.diff] using congrArg (p.diff X V + ·) ih
+@[simp] theorem Poly.diff_monomial {R : Type*} [CommRing R] [Algebra ℚ R]
+    (X V : α → R) (ts : List α) : Poly.diff X V (Poly.monomial ts) = dmonomial X V ts :=
+  lift_word _ _
 
 theorem selections_diff {R : Type*} [CommRing R] (X V : α → R)
     (ts : List α) :
@@ -91,19 +78,11 @@ theorem selections_product {R : Type*} [CommRing R] (X : α → R)
 /-- Primitive of a moment monomial against one elementary column.
 The fuel need only exceed the number of factors. -/
 def primitive (graft : α → α → α) : ℕ → List α → α → Poly α
-  | 0, _, _ => .zero
+  | 0, _, _ => 0
   | n + 1, ts, v =>
-      .scale ((ts.length + 1 : ℚ)⁻¹)
-        (.add (.monomial (v :: ts)) (Poly.sum ((selections ts).map fun p =>
-          .add (primitive graft n p.2 (graft p.1 v))
-            (.scale (-1) (primitive graft n p.2 (graft v p.1))))))
-
-private theorem List.sum_map_sub_local {α R : Type*} [AddCommGroup R]
-    (xs : List α) (f g : α → R) :
-    (xs.map (fun x => f x - g x)).sum = (xs.map f).sum - (xs.map g).sum := by
-  induction xs with
-  | nil => simp
-  | cons x xs ih => simp [ih, sub_add_sub_comm]
+      ((ts.length + 1 : ℚ)⁻¹) • (Poly.monomial (v :: ts) +
+        ((selections ts).map fun p =>
+          primitive graft n p.2 (graft p.1 v) - primitive graft n p.2 (graft v p.1)).sum)
 
 /-- Universal differential identity used for moment reduction. -/
 theorem diff_primitive {R : Type*} [CommRing R] [Algebra ℚ R]
@@ -115,16 +94,12 @@ theorem diff_primitive {R : Type*} [CommRing R] [Algebra ℚ R]
   | zero => omega
   | succ n ih =>
       have hterms : ∀ p ∈ selections ts,
-          (Poly.add (primitive graft n p.2 (graft p.1 v))
-            (.scale (-1) (primitive graft n p.2 (graft v p.1)))).diff X V =
+          (primitive graft n p.2 (graft p.1 v) - primitive graft n p.2 (graft v p.1)).diff X V =
           (p.2.map X).prod * (X p.1 * V v - X v * V p.1) := by
         intro p hp
         have hlen := selections_rest_length hp
-        simp only [Poly.diff]
-        rw [ih p.2 _ (by omega), ih p.2 _ (by omega)]
-        simp only [map_neg, map_one, neg_one_mul, ← sub_eq_add_neg]
-        rw [← mul_sub, harea]
-      rw [primitive, Poly.diff, Poly.diff, Poly.diff_sum]
+        rw [map_sub, ih p.2 _ (by omega), ih p.2 _ (by omega), ← mul_sub, harea]
+      rw [primitive, map_smul, map_add, map_list_sum, Poly.diff_monomial]
       simp only [List.map_map, Function.comp_def]
       rw [List.map_congr_left hterms]
       have hs :
@@ -132,16 +107,17 @@ theorem diff_primitive {R : Type*} [CommRing R] [Algebra ℚ R]
             (p.2.map X).prod * (X p.1 * V v - X v * V p.1))).sum =
           (ts.length : R) * (ts.map X).prod * V v - X v * dmonomial X V ts := by
         simp_rw [mul_sub, ← mul_assoc, mul_right_comm _ (X v)]
-        rw [List.sum_map_sub_local, List.sum_map_mul_right, List.sum_map_mul_right,
+        rw [List.sum_hom₂ _ (· - ·) (fun a b c d => (sub_add_sub_comm a c b d).symm) (sub_self 0) _ _, List.sum_map_mul_right, List.sum_map_mul_right,
           selections_product, selections_diff]
         ring
       rw [hs]
-      dsimp only [Poly.diff, dmonomial]
+      dsimp only [dmonomial]
+      rw [Algebra.smul_def]
       have hq : (ts.length + 1 : ℚ)⁻¹ * (ts.length + 1) = 1 :=
         inv_mul_cancel₀ (by positivity)
       have hu : algebraMap ℚ R ((ts.length + 1 : ℚ)⁻¹) * ((ts.length : R) + 1) = 1 := by
         simpa only [map_mul, map_add, map_natCast, map_one] using congrArg (algebraMap ℚ R) hq
       linear_combination hu * (ts.map X).prod * V v
 
-
+end
 end RoughPaths.AreaReduction

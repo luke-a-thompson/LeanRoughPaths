@@ -79,13 +79,6 @@ theorem halfShuffle_prod (y : Polynomial α) (xs : List (Polynomial α)) :
     intro p _
     rw [shuffle_assoc]
 
-private theorem sum_map_sub {β V : Type*} [AddCommGroup V]
-    (xs : List β) (f g : β → V) :
-    (xs.map (fun x => f x - g x)).sum = (xs.map f).sum - (xs.map g).sum := by
-  induction xs with
-  | nil => simp
-  | cons x xs ih => simp [ih, sub_add_sub_comm]
-
 /-- The reduction decreases the number of factors, with no division by
 path increments or coefficients. -/
 theorem halfShuffle_prod_reduction (xs : List (Polynomial α)) (y : Polynomial α)
@@ -101,7 +94,8 @@ theorem halfShuffle_prod_reduction (xs : List (Polynomial α)) (y : Polynomial �
     dsimp only [prod] at he
     simp only [area, map_sub, halfShuffle_assoc]
     rw [shuffle_comm (prod p.2) p.1, he, shuffle_comm (prod p.2) y]
-  rw [List.map_congr_left ht, sum_map_sub]
+  rw [List.map_congr_left ht, List.sum_hom₂ _ (· - ·)
+    (fun a b c d => (sub_add_sub_comm a c b d).symm) (sub_self 0) _ _]
   simp only [List.sum_replicate, List.map_const', selections_length]
   rw [← halfShuffle_prod]
   have hs := shuffle_eq_halfShuffle (prod xs) y

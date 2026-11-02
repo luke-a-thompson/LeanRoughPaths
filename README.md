@@ -31,6 +31,9 @@ segment update from constant letter velocities.
 `RoughPaths.AreaReduction.diff_primitive` supplies the corresponding polynomial
 reduction for any labelled family closed under signed area. It contains no
 rooted trees or numerical-method assumptions; LeanBSeries supplies those.
+Both APIs use Mathlib `Finsupp` word polynomials and linear maps. The scalar
+primitive returns an explicit polynomial for stage substitution, while
+`word_generated` certifies homogeneous membership in the area-generated span.
 
 References: Diehl–Lyons–Preiß–Reizenstein, *Areas of areas generate the shuffle
 algebra*, Corollary 4.8; Salvi et al., *A structure theorem for streamed

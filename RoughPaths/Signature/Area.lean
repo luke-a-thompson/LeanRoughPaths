@@ -1,6 +1,7 @@
 import HopfAlgebras.Words.AreaGeneration
 import RoughPaths.Signature.Basic
 import Mathlib.Algebra.Algebra.Rat
+import Mathlib.Algebra.Algebra.Bilinear
 import Mathlib.Algebra.Order.BigOperators.Group.List
 
 /-! # Signature coordinates determined by iterated areas -/
@@ -24,18 +25,13 @@ def pairing (S : Signature α R) : HopfAlgebras.Word.Polynomial α →ₗ[ℚ] R
 
 theorem pairing_shuffle (S : Signature α R) (p q : HopfAlgebras.Word.Polynomial α) :
     pairing S (HopfAlgebras.Word.Polynomial.shuffle p q) = pairing S p * pairing S q := by
-  induction p using HopfAlgebras.Word.Polynomial.induction with
-  | zero => simp
-  | add p q hp hq => simp only [map_add, LinearMap.add_apply, hp, hq, add_mul]
-  | smul c p hp => simp only [map_smul, LinearMap.smul_apply, hp, smul_mul_assoc]
-  | word u =>
-    induction q using HopfAlgebras.Word.Polynomial.induction with
-    | zero => simp
-    | add p q hp hq => simp only [map_add, hp, hq, mul_add]
-    | smul c p hp => simp only [map_smul, hp, mul_smul_comm]
-    | word v =>
-      simp only [shuffle_word, map_list_sum, List.map_map, pairing_word]
-      simpa only [Function.comp_def, pairing_word, Word.shuffleCoeff, Word.coeff, coeff_apply] using (S.shuffle u v).symm
+  have h : HopfAlgebras.Word.Polynomial.shuffle.compr₂ (pairing S) =
+      (LinearMap.mul ℚ R).compl₁₂ (pairing S) (pairing S) := by
+    apply linearMap_ext; intro u
+    apply linearMap_ext; intro v
+    simpa [map_list_sum, List.map_map, Function.comp_def,
+      Word.shuffleCoeff, Word.coeff, coeff_apply] using (S.shuffle u v).symm
+  exact LinearMap.congr_fun (LinearMap.congr_fun h p) q
 
 @[simp] theorem pairing_prod (S : Signature α R) (ps : List (HopfAlgebras.Word.Polynomial α)) :
     pairing S (prod ps) = (ps.map (pairing S)).prod := by

@@ -1,6 +1,7 @@
 import HopfAlgebras.Words.Shuffle
 import Mathlib.LinearAlgebra.Finsupp.LinearCombination
 import Mathlib.LinearAlgebra.BilinearMap
+import Mathlib.Algebra.Algebra.Bilinear
 
 /-! # Finite rational word polynomials
 
@@ -110,52 +111,33 @@ theorem shuffle_comm (p q : Polynomial α) : shuffle p q = shuffle q p := by
       rw [h]
       exact smul c _ (word w)
 
-private theorem sum_flatMap {β γ V : Type*} [AddCommMonoid V]
-    (xs : List β) (f : β → List γ) (g : γ → V) :
-    ((xs.flatMap f).map g).sum = (xs.map fun x => ((f x).map g).sum).sum := by
-  induction xs with
-  | nil => rfl
-  | cons x xs ih => simp [ih]
-
 @[simp] theorem sum_apply {V W : Type*} [AddCommGroup V] [Module ℚ V]
     [AddCommGroup W] [Module ℚ W] (fs : List (V →ₗ[ℚ] W)) (v : V) :
     fs.sum v = (fs.map fun f => f v).sum := by
-  induction fs with
-  | nil => simp
-  | cons f fs ih => simp [ih]
+  exact map_list_sum (LinearMap.applyₗ (R := ℚ) v) fs
 
 theorem shuffle_assoc (p q r : Polynomial α) :
     shuffle (shuffle p q) r = shuffle p (shuffle q r) := by
-  induction p using induction with
-  | zero => simp
-  | add p q hp hq => simp only [map_add, LinearMap.add_apply, hp, hq]
-  | smul c p hp => simp only [map_smul, LinearMap.smul_apply, hp]
-  | word u =>
-    induction q using induction with
-    | zero => simp
-    | add p q hp hq => simp only [map_add, LinearMap.add_apply, hp, hq]
-    | smul c p hp => simp only [map_smul, LinearMap.smul_apply, hp]
-    | word v =>
-      induction r using induction with
-      | zero => simp
-      | add p q hp hq => simp only [map_add, hp, hq]
-      | smul c p hp => simp only [map_smul, hp]
-      | word w =>
-        simpa [sum_flatMap, List.map_map, Function.comp_def, map_list_sum]
-          using ((Word.shuffle_flatMap_shuffle_perm u v w).map word).sum_eq
+  have h : (shuffle (α := α)).compr₂ shuffle =
+      (LinearMap.llcomp ℚ (Polynomial α) (Polynomial α) (Polynomial α)).compl₁₂ shuffle shuffle := by
+    ext u v w : 6
+    change shuffle (shuffle (word u) (word v)) (word w) =
+      shuffle (word u) (shuffle (word v) (word w))
+    simpa [List.flatMap_def, List.map_flatten, List.sum_flatten, List.map_map,
+      Function.comp_def, map_list_sum] using ((Word.shuffle_flatMap_shuffle_perm u v w).map word).sum_eq
+  exact LinearMap.congr_fun (LinearMap.congr_fun (LinearMap.congr_fun h p) q) r
 
 theorem halfShuffle_append (p q : Polynomial α) (a : α) :
     halfShuffle p (append a q) = append a (shuffle p q) := by
-  induction p using induction with
-  | zero => simp
-  | add p q hp hq => simp only [map_add, LinearMap.add_apply, hp, hq]
-  | smul c p hp => simp only [map_smul, LinearMap.smul_apply, hp]
-  | word u =>
-    induction q using induction with
-    | zero => simp
-    | add p q hp hq => simp only [map_add, hp, hq]
-    | smul c p hp => simp only [map_smul, hp]
-    | word v => simp
+  have h : halfShuffle.compl₂ (append a) = shuffle.compr₂ (append a) := by
+    apply linearMap_ext; intro u
+    apply linearMap_ext; intro v
+    simp
+  exact LinearMap.congr_fun (LinearMap.congr_fun h p) q
+
+@[simp] theorem halfShuffle_one_right (p : Polynomial α) :
+    halfShuffle p (word []) = 0 := by
+  induction p using induction <;> simp_all
 
 /-- The right Zinbiel identity. -/
 theorem halfShuffle_assoc (p q r : Polynomial α) :
@@ -166,18 +148,10 @@ theorem halfShuffle_assoc (p q r : Polynomial α) :
   | smul c p hp => simp only [map_smul, hp]
   | word w =>
     induction w using List.reverseRecOn with
-    | nil =>
-      have h : ∀ p : Polynomial α, halfShuffle p (word []) = 0 := by
-        intro p
-        induction p using induction <;> simp_all
-      simp [h]
+    | nil => simp
     | append_singleton w a _ =>
       rw [← append_word, halfShuffle_append, halfShuffle_append,
         halfShuffle_append, shuffle_assoc]
-
-@[simp] theorem halfShuffle_one_right (p : Polynomial α) :
-    halfShuffle p (word []) = 0 := by
-  induction p using induction <;> simp_all
 
 /-- Constant coefficient. -/
 def constant : Polynomial α →ₗ[ℚ] ℚ := Finsupp.lapply []
@@ -201,32 +175,24 @@ theorem halfShuffle_one_left (p : Polynomial α) :
 theorem shuffle_eq_halfShuffle (p q : Polynomial α) :
     shuffle p q = halfShuffle p q + halfShuffle q p +
       (constant p * constant q) • word [] := by
-  induction p using induction with
-  | zero => simp
-  | add p q hp hq =>
-    simp only [map_add, LinearMap.add_apply, hp, hq, add_mul, add_smul]; abel
-  | smul c p hp =>
-    simp only [map_smul, LinearMap.smul_apply, hp, smul_add, smul_smul]
-    simp [smul_eq_mul, mul_assoc]
-  | word u =>
-    induction q using induction with
-    | zero => simp
-    | add p q hp hq =>
-      simp only [map_add, LinearMap.add_apply, hp, hq, mul_add, add_smul]; abel
-    | smul c p hp =>
-      simp only [map_smul, LinearMap.smul_apply, hp, smul_add, smul_smul]
-      simp [smul_eq_mul, mul_left_comm]
-    | word v =>
-      induction u using List.reverseRecOn with
-      | nil => simp [halfShuffle_one_left]
-      | append_singleton u a _ =>
-        induction v using List.reverseRecOn with
-        | nil => simp
-        | append_singleton v b _ =>
-          have h := ((Word.shuffle_concat_concat_perm a b u v).map word).sum_eq
-          simp only [halfShuffle_word_append]
-          rw [shuffle_comm (word (v ++ [b])) (word u)]
-          simpa [map_list_sum, List.map_map, Function.comp_def, add_comm] using h
+  have h : shuffle (α := α) = halfShuffle + halfShuffle.flip +
+      ((LinearMap.mul ℚ ℚ).compl₁₂ constant constant).compr₂
+        (LinearMap.toSpanSingleton ℚ (Polynomial α) (word [])) := by
+    apply linearMap_ext; intro u
+    apply linearMap_ext; intro v
+    change shuffle (word u) (word v) = halfShuffle (word u) (word v) +
+      halfShuffle (word v) (word u) + (constant (word u) * constant (word v)) • word []
+    induction u using List.reverseRecOn with
+    | nil => simp [halfShuffle_one_left]
+    | append_singleton u a _ =>
+      induction v using List.reverseRecOn with
+      | nil => simp
+      | append_singleton v b _ =>
+        have h := ((Word.shuffle_concat_concat_perm a b u v).map word).sum_eq
+        simp only [halfShuffle_word_append]
+        rw [shuffle_comm (word (v ++ [b])) (word u)]
+        simpa [map_list_sum, List.map_map, Function.comp_def, add_comm] using h
+  exact LinearMap.congr_fun (LinearMap.congr_fun h p) q
 
 @[simp] theorem constant_append (a : α) (p : Polynomial α) : constant (append a p) = 0 := by
   induction p using induction <;> simp_all
