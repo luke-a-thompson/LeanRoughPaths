@@ -1,4 +1,6 @@
 import HopfAlgebras.Words.Polynomial
+import HopfAlgebras.Util.List
+import Mathlib.LinearAlgebra.Span.Basic
 import Mathlib.Tactic.Module
 import Mathlib.Data.Multiset.AddSub
 
@@ -23,6 +25,8 @@ def AreaExpr.content {α : Type*} : AreaExpr α → Multiset α
 
 namespace Polynomial
 
+open List (selections selections_length selections_perm selections_map)
+
 variable {α : Type*}
 noncomputable section
 
@@ -44,25 +48,6 @@ theorem prod_perm {ps qs : List (Polynomial α)} (h : ps.Perm qs) : prod ps = pr
   | cons p h ih => simp [prod, ih]
   | swap p q ps => simp only [prod, ← shuffle_assoc, shuffle_comm p q]
   | trans _ _ ih₁ ih₂ => exact ih₁.trans ih₂
-
-/-- Choose one occurrence, retaining the other factors, including repeats. -/
-def selections {β : Type*} : List β → List (β × List β)
-  | [] => []
-  | a :: as => (a, as) :: (selections as).map (fun p => (p.1, a :: p.2))
-
-@[simp] theorem selections_length {β : Type*} (xs : List β) :
-    (selections xs).length = xs.length := by
-  induction xs <;> simp [selections, *]
-
-theorem selections_perm {β : Type*} {xs : List β} {p : β × List β}
-    (h : p ∈ selections xs) : (p.1 :: p.2).Perm xs := by
-  induction xs generalizing p with
-  | nil => simp [selections] at h
-  | cons a xs ih =>
-    simp only [selections, List.mem_cons, List.mem_map] at h
-    rcases h with rfl | ⟨q, hq, rfl⟩
-    · exact .refl _
-    · exact (List.Perm.swap _ _ _).trans ((ih hq).cons a)
 
 theorem halfShuffle_prod (y : Polynomial α) (xs : List (Polynomial α)) :
     halfShuffle y (prod xs) =
@@ -106,75 +91,56 @@ theorem halfShuffle_prod_reduction (xs : List (Polynomial α)) (y : Polynomial �
 
 /-- A homogeneous linear combination of shuffle monomials in iterated
 areas. The index records every letter occurrence, not just total degree. -/
-inductive Generated : Multiset α → Polynomial α → Prop
-  | monomial (ts : List (AreaExpr α)) :
-      Generated (ts.map AreaExpr.content).sum (prod (ts.map evalArea))
-  | add {m p q} : Generated m p → Generated m q → Generated m (p + q)
-  | smul {m p} (c : ℚ) : Generated m p → Generated m (c • p)
-  | zero (m) : Generated m 0
+def areaSpan (m : Multiset α) : Submodule ℚ (Polynomial α) :=
+  Submodule.span ℚ {p | ∃ ts : List (AreaExpr α),
+    (ts.map AreaExpr.content).sum = m ∧ prod (ts.map evalArea) = p}
 
-theorem Generated.sum {β : Type*} (xs : List β) (f : β → Polynomial α) (m : Multiset α)
-    (h : ∀ x ∈ xs, Generated m (f x)) : Generated m (xs.map f).sum := by
-  induction xs with
-  | nil => exact .zero m
-  | cons x xs ih => exact .add (h x (by simp)) (ih fun y hy => h y (by simp [hy]))
+theorem prod_evalArea_mem (ts : List (AreaExpr α)) :
+    prod (ts.map evalArea) ∈ areaSpan (ts.map AreaExpr.content).sum :=
+  Submodule.subset_span ⟨ts, rfl, rfl⟩
 
-theorem selections_map {β γ : Type*} (f : β → γ) (xs : List β) :
-    selections (xs.map f) = (selections xs).map (fun p => (f p.1, p.2.map f)) := by
-  induction xs with
-  | nil => rfl
-  | cons x xs ih => simp [selections, ih, List.map_map, Function.comp_def]
-
-private theorem generated_halfShuffle_monomial (xs : List (AreaExpr α)) (y : AreaExpr α) :
-    Generated ((xs.map AreaExpr.content).sum + y.content)
-      (halfShuffle (prod (xs.map evalArea)) (evalArea y)) := by
+private theorem halfShuffle_monomial_mem (xs : List (AreaExpr α)) (y : AreaExpr α) :
+    halfShuffle (prod (xs.map evalArea)) (evalArea y) ∈
+      areaSpan ((xs.map AreaExpr.content).sum + y.content) := by
   have h := halfShuffle_prod_reduction (xs.map evalArea) (evalArea y) (constant_evalArea y)
   rw [List.length_map, selections_map, List.map_map] at h
-  have ht : Generated ((xs.map AreaExpr.content).sum + y.content)
-      (shuffle (prod (xs.map evalArea)) (evalArea y) +
-        ((selections xs).map fun p =>
-          halfShuffle (prod (p.2.map evalArea)) (area (evalArea p.1) (evalArea y))).sum) := by
-    apply Generated.add
-    · simpa [prod, add_comm, shuffle_comm] using Generated.monomial (y :: xs)
-    · apply Generated.sum
-      intro p hp
-      have hm := ((selections_perm hp).map AreaExpr.content).sum_eq
-      simp only [List.map_cons, List.sum_cons] at hm
-      have hi := generated_halfShuffle_monomial p.2 (.bracket p.1 y)
-      convert hi using 1
-      · simp only [AreaExpr.content]; rw [← hm]; ac_rfl
-      · rfl
-  have hn : (xs.length : ℚ) + 1 ≠ 0 := by positivity
-  have he := congrArg (fun z => (((xs.length : ℚ) + 1)⁻¹) • z) h
-  rw [smul_smul, inv_mul_cancel₀ hn, one_smul] at he
-  rw [he]
-  exact .smul _ ht
+  apply (Submodule.smul_mem_iff _ (show (xs.length : ℚ) + 1 ≠ 0 by positivity)).mp
+  rw [h]
+  apply Submodule.add_mem
+  · simpa [prod, add_comm, shuffle_comm] using prod_evalArea_mem (y :: xs)
+  · apply list_sum_mem
+    intro z hz
+    obtain ⟨p, hp, rfl⟩ := List.mem_map.mp hz
+    have hm := ((selections_perm hp).map AreaExpr.content).sum_eq
+    simp only [List.map_cons, List.sum_cons] at hm
+    have hi := halfShuffle_monomial_mem p.2 (.bracket p.1 y)
+    convert hi using 1
+    · simp only [AreaExpr.content]; rw [← hm]; ac_rfl
+    · rfl
 termination_by xs.length
 decreasing_by
-  have hlen := (selections_perm hp).length_eq
-  simp only [List.length_cons] at hlen
+  have hlen := List.selections_rest_length hp
   omega
 
 /-- Homogeneous polynomials in areas are closed under integration
 against an iterated area. -/
-theorem Generated.halfShuffle_area {m : Multiset α} {p : Polynomial α}
-    (hp : Generated m p) (y : AreaExpr α) :
-    Generated (m + y.content) (halfShuffle p (evalArea y)) := by
-  induction hp with
-  | monomial xs => exact generated_halfShuffle_monomial xs y
-  | add _ _ hp hq => simpa only [map_add, LinearMap.add_apply] using Generated.add hp hq
-  | smul c _ hp => simpa only [map_smul, LinearMap.smul_apply] using Generated.smul c hp
-  | zero m => simpa using Generated.zero (m + y.content)
+theorem halfShuffle_area_mem {m : Multiset α} {p : Polynomial α}
+    (hp : p ∈ areaSpan m) (y : AreaExpr α) :
+    halfShuffle p (evalArea y) ∈ areaSpan (m + y.content) := by
+  refine (Submodule.span_le
+    (p := (areaSpan (m + y.content)).comap (halfShuffle.flip (evalArea y)))).mpr ?_ hp
+  rintro _ ⟨xs, rfl, rfl⟩
+  exact halfShuffle_monomial_mem xs y
 
 /-- Every word is a rational shuffle polynomial in letters and nested
 areas, preserving the multiplicity of each letter (DLPR, Corollary 4.8). -/
-theorem word_generated (w : List α) : Generated (↑w : Multiset α) (word w) := by
+theorem word_generated (w : List α) : word w ∈ areaSpan (↑w : Multiset α) := by
   induction w using List.reverseRecOn with
-  | nil => exact Generated.monomial []
+  | nil => exact prod_evalArea_mem []
   | append_singleton w a ih =>
     have he : halfShuffle (word w) (word [a]) = word (w ++ [a]) := by
       simpa using halfShuffle_word_append w [] a
-    simpa [evalArea, AreaExpr.content, he, ← Multiset.coe_add] using ih.halfShuffle_area (.letter a)
+    simpa [evalArea, AreaExpr.content, he, ← Multiset.coe_add] using halfShuffle_area_mem ih (.letter a)
 
 end
 end Polynomial

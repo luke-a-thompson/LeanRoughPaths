@@ -1,4 +1,5 @@
-import HopfAlgebras.Words.AreaGeneration
+import HopfAlgebras.Words.Polynomial
+import HopfAlgebras.Util.List
 import Mathlib.Algebra.BigOperators.Ring.List
 import Mathlib.Algebra.Algebra.Rat
 import Mathlib.Tactic.LinearCombination
@@ -11,7 +12,7 @@ The labels are arbitrary. `graft u v - graft v u` represents their area;
 no tree structure or numerical method is assumed.
 -/
 
-namespace RoughPaths.AreaReduction
+namespace HopfAlgebras.Word.AreaReduction
 
 open HopfAlgebras.Word.Polynomial
 
@@ -34,11 +35,7 @@ end Poly
 
 variable {α : Type*}
 
-export HopfAlgebras.Word.Polynomial (selections selections_length selections_perm)
-
-theorem selections_rest_length {α : Type*} {as : List α} {p : α × List α}
-    (h : p ∈ selections as) : p.2.length + 1 = as.length := by
-  simpa using (selections_perm h).length_eq
+open List (selections selections_length selections_perm selections_rest_length)
 
 /-- Differential of a monomial, by Leibniz's rule. -/
 def dmonomial {R : Type*} [CommRing R] (X V : α → R) : List α → R
@@ -120,4 +117,4 @@ theorem diff_primitive {R : Type*} [CommRing R] [Algebra ℚ R]
       linear_combination hu * (ts.map X).prod * V v
 
 end
-end RoughPaths.AreaReduction
+end HopfAlgebras.Word.AreaReduction

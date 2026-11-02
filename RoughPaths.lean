@@ -12,7 +12,6 @@ import RoughPaths.Signature.Primitive
 import RoughPaths.Signature.Log
 import RoughPaths.Signature.Kernel
 import RoughPaths.Signature.Area
-import RoughPaths.Signature.AreaReduction
 import RoughPaths.Signature.Polynomial
 
 -- Word rough paths: non-geometric and weakly geometric, order theory

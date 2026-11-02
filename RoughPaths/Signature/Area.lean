@@ -23,6 +23,12 @@ def pairing (S : Signature α R) : HopfAlgebras.Word.Polynomial α →ₗ[ℚ] R
 @[simp] theorem pairing_word (S : Signature α R) (w : List α) :
     pairing S (word w) = S w := lift_word _ _
 
+/-- The signature coordinate of a letter or nested signed area. -/
+def areaCoeff (S : Signature α R) (t : Word.AreaExpr α) : R := pairing S (evalArea t)
+
+@[simp] theorem areaCoeff_letter (S : Signature α R) (a : α) :
+    S.areaCoeff (.letter a) = S [a] := pairing_word S [a]
+
 theorem pairing_shuffle (S : Signature α R) (p q : HopfAlgebras.Word.Polynomial α) :
     pairing S (HopfAlgebras.Word.Polynomial.shuffle p q) = pairing S p * pairing S q := by
   have h : HopfAlgebras.Word.Polynomial.shuffle.compr₂ (pairing S) =
@@ -43,29 +49,21 @@ theorem pairing_shuffle (S : Signature α R) (p q : HopfAlgebras.Word.Polynomial
 suffices to determine that word. -/
 theorem eq_of_area_eq (S T : Signature α R) (w : List α)
     (h : ∀ t : HopfAlgebras.Word.AreaExpr α, t.content ≤ (↑w : Multiset α) →
-      pairing S (evalArea t) = pairing T (evalArea t)) : S w = T w := by
-  have aux : ∀ {m p}, Generated (α := α) m p →
-      (∀ t, t.content ≤ m → pairing S (evalArea t) = pairing T (evalArea t)) →
-      pairing S p = pairing T p := by
-    intro m p hp
-    induction hp with
-    | zero m => simp
-    | add _ _ hp hq => intro h; simp only [map_add, hp h, hq h]
-    | smul c _ hp => intro h; simp only [map_smul, hp h]
-    | monomial ts =>
-      intro h
-      simp only [pairing_prod, List.map_map]
-      apply congrArg List.prod
-      apply List.map_congr_left
-      intro t ht
-      exact h t (List.le_sum_of_mem (List.mem_map.mpr ⟨t, ht, rfl⟩))
-  simpa only [pairing_word] using aux (word_generated w) h
+      S.areaCoeff t = T.areaCoeff t) : S w = T w := by
+  rw [← pairing_word S w, ← pairing_word T w]
+  apply LinearMap.eqOn_span ?_ (word_generated w)
+  rintro _ ⟨ts, hts, rfl⟩
+  simp only [pairing_prod, List.map_map]
+  apply congrArg List.prod
+  apply List.map_congr_left
+  intro t ht
+  exact h t (hts ▸ List.le_sum_of_mem (List.mem_map.mpr ⟨t, ht, rfl⟩))
 
 /-- A weighted truncation needs only areas up to that same weight.
 Weights may be zero; positivity is not needed for this finite-word result. -/
 theorem eq_of_area_eq_weight (S T : Signature α R) (weight : α → ℕ) (n : ℕ)
     (h : ∀ t : HopfAlgebras.Word.AreaExpr α, (t.content.map weight).sum ≤ n →
-      pairing S (evalArea t) = pairing T (evalArea t))
+      S.areaCoeff t = T.areaCoeff t)
     (w : List α) (hw : (w.map weight).sum ≤ n) : S w = T w := by
   apply eq_of_area_eq
   intro t ht
@@ -77,7 +75,7 @@ theorem eq_of_area_eq_weight (S T : Signature α R) (weight : α → ℕ) (n : �
 
 /-- The iterated areas determine the whole signature. -/
 theorem ext_of_area_eq (S T : Signature α R)
-    (h : ∀ t, pairing S (evalArea t) = pairing T (evalArea t)) : S = T := by
+    (h : ∀ t, S.areaCoeff t = T.areaCoeff t) : S = T := by
   apply Subtype.ext
   funext w
   exact eq_of_area_eq S T w (fun t _ => h t)

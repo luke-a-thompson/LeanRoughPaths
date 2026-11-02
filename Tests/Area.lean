@@ -1,5 +1,5 @@
 import RoughPaths.Signature.Polynomial
-import RoughPaths.Signature.AreaReduction
+import HopfAlgebras.Words.AreaReduction
 
 open HopfAlgebras.Word HopfAlgebras.Word.Polynomial
 
@@ -19,13 +19,13 @@ example {α : Type*} (a b : α) :
 example {α : Type*} (a : α) : shuffle (word [a]) (word [a]) = (2 : ℚ) • word [a, a] := by
   simp [shuffle_word, two_smul]
 
-example {α : Type*} (a b c : α) : Generated ({a} + {b} + {c}) (word [a,b,c]) := by
+example {α : Type*} (a b c : α) : word [a,b,c] ∈ areaSpan ({a} + {b} + {c}) := by
   exact word_generated [a,b,c]
 
-example {α : Type*} : Generated (0 : Multiset α) (word []) := word_generated []
+example {α : Type*} : word [] ∈ areaSpan (0 : Multiset α) := word_generated []
 
 #print axioms HopfAlgebras.Word.Polynomial.word_generated
 #print axioms RoughPaths.Signature.ext_of_area_eq
 #print axioms RoughPaths.Signature.eq_of_area_eq_weight
 #print axioms RoughPaths.Signature.derivative_pairing_area
-#print axioms RoughPaths.AreaReduction.diff_primitive
+#print axioms HopfAlgebras.Word.AreaReduction.diff_primitive
