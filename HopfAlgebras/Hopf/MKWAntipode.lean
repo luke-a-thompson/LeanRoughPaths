@@ -5,6 +5,7 @@ Authors: Daniil Shmelev
 -/
 import HopfAlgebras.Hopf.MKWCoproduct
 import HopfAlgebras.Util.List
+import Mathlib.LinearAlgebra.Finsupp.LinearCombination
 
 /-!
 # The Munthe-Kaas-Wright Antipode
@@ -67,59 +68,38 @@ theorem shuffleOf_singleton_singleton [Semiring R] (t u : PTree) :
     List.map_cons, List.map_nil, List.cons_append, List.nil_append,
     List.sum_cons, List.sum_nil, add_zero]
 
-/-- Shuffle a general element of the ordered forest algebra with a fixed
-ordered forest on the right. -/
-def shuffleRight [Semiring R] (x : PlanarForestAlgebra R) (us : PlanarForest) :
-    PlanarForestAlgebra R :=
-  Finsupp.sum x.coeff fun ts a => a • shuffleOf (R := R) ts us
-
-@[simp]
-theorem shuffleRight_zero_left [Semiring R] (us : PlanarForest) :
-    shuffleRight (R := R) 0 us = 0 := by
-  simp [shuffleRight]
+/-- Shuffling with a fixed forest on the right, extended linearly in the
+left argument. The fixed forest comes first so `shuffleRight us` is a linear map. -/
+def shuffleRight [Semiring R] (us : PlanarForest) :
+    PlanarForestAlgebra R →ₗ[R] PlanarForestAlgebra R :=
+  (Finsupp.linearCombination R (fun ts => shuffleOf (R := R) ts us)).comp
+    (MonoidAlgebra.coeffLinearEquiv R).toLinearMap
 
 theorem shuffleRight_single_left [Semiring R] (ts : PlanarForest) (a : R)
     (us : PlanarForest) :
-    shuffleRight (MonoidAlgebra.single ts a) us = a • shuffleOf ts us := by
-  rw [shuffleRight, MonoidAlgebra.coeff_single]
-  exact Finsupp.sum_single_index (by simp)
+    shuffleRight us (MonoidAlgebra.single ts a) = a • shuffleOf ts us := by
+  change Finsupp.linearCombination R _ (Finsupp.single ts a) = _
+  exact Finsupp.linearCombination_single _ _ _
 
 @[simp]
 theorem shuffleRight_ofForest_left [Semiring R] (ts us : PlanarForest) :
-    shuffleRight (ofForest (R := R) ts) us = shuffleOf ts us := by
+    shuffleRight us (ofForest (R := R) ts) = shuffleOf ts us := by
   rw [ofForest, shuffleRight_single_left, one_smul]
 
 @[simp]
 theorem shuffleRight_one_left [Semiring R] (us : PlanarForest) :
-    shuffleRight (R := R) 1 us = ofForest us := by
-  have h : (1 : PlanarForestAlgebra R) = ofForest ([] : PlanarForest) := by
-    simp
-  rw [h, shuffleRight_ofForest_left, shuffleOf_nil_left]
-
-theorem shuffleRight_add_left [Semiring R] (x y : PlanarForestAlgebra R)
-    (us : PlanarForest) :
-    shuffleRight (x + y) us = shuffleRight x us + shuffleRight y us := by
-  rw [shuffleRight, MonoidAlgebra.coeff_add]
-  exact Finsupp.sum_add_index' (fun _ => zero_smul R _) (fun _ a b => add_smul a b _)
-
-theorem shuffleRight_neg_left [Ring R] (x : PlanarForestAlgebra R)
-    (us : PlanarForest) :
-    shuffleRight (-x) us = -shuffleRight x us := by
-  have h := shuffleRight_add_left x (-x) us
-  rw [add_neg_cancel, shuffleRight_zero_left] at h
-  exact (neg_eq_of_add_eq_zero_right h.symm).symm
+    shuffleRight (R := R) us 1 = ofForest us := by
+  simpa only [ofForest_nil, shuffleOf_nil_left] using
+    shuffleRight_ofForest_left (R := R) [] us
 
 /-- Shuffling with the empty forest on the right is the identity. -/
 @[simp]
-theorem shuffleRight_nil_right [Semiring R] (x : PlanarForestAlgebra R) :
-    shuffleRight x [] = x := by
-  rw [shuffleRight]
-  have h : ∀ ts ∈ x.coeff.support, ∀ a : R,
-      a • shuffleOf (R := R) ts [] = MonoidAlgebra.single ts a := by
-    intro ts _ a
-    rw [shuffleOf_nil_right, ofForest, MonoidAlgebra.smul_single', mul_one]
-  rw [Finsupp.sum_congr fun ts hts => h ts hts (x.coeff ts)]
-  exact MonoidAlgebra.sum_coeff_single x
+theorem shuffleRight_nil_right [Semiring R] :
+    shuffleRight (R := R) [] = LinearMap.id := by
+  apply MonoidAlgebra.lhom_ext'
+  intro ts
+  apply LinearMap.ext_ring
+  simp [shuffleRight_single_left, ofForest]
 
 end
 
@@ -141,7 +121,7 @@ def mkwAntipode [Ring R] (ω : PlanarForest) : PlanarForestAlgebra R :=
   if h : ω = [] then 1
   else
     -(((mkwTerms ω).tail.attach.map fun pr =>
-        PlanarForestAlgebra.shuffleRight (mkwAntipode pr.1.1) pr.1.2).sum)
+        PlanarForestAlgebra.shuffleRight pr.1.2 (mkwAntipode pr.1.1)).sum)
 termination_by PTree.orderList ω
 decreasing_by
   exact orderList_fst_lt_of_mem_tail_mkwTerms h pr.2
@@ -156,12 +136,12 @@ theorem mkwAntipode_nil [Ring R] :
 theorem mkwAntipode_of_ne_nil [Ring R] {ω : PlanarForest} (hω : ω ≠ []) :
     mkwAntipode (R := R) ω =
       -(((mkwTerms ω).tail.map fun pr =>
-          PlanarForestAlgebra.shuffleRight (mkwAntipode (R := R) pr.1) pr.2).sum) := by
+          PlanarForestAlgebra.shuffleRight pr.2 (mkwAntipode (R := R) pr.1)).sum) := by
   conv_lhs => rw [mkwAntipode]
-  rw [dif_neg hω]
+  rw [dite_eq_right hω]
   congr 1
   exact List.sum_attach_map (mkwTerms ω).tail fun pr =>
-    PlanarForestAlgebra.shuffleRight (mkwAntipode (R := R) pr.1) pr.2
+    PlanarForestAlgebra.shuffleRight pr.2 (mkwAntipode (R := R) pr.1)
 
 /--
 The left antipode identity `μ_N(S_N ⊗ I)Δ_N = u_N ∘ e_N` of the MKW Hopf
@@ -169,12 +149,12 @@ algebra (arXiv:math/0603023, Theorem 2), evaluated on an ordered forest.
 -/
 theorem sum_shuffleRight_mkwAntipode_mkwTerms [Ring R] (ω : PlanarForest) :
     ((mkwTerms ω).map fun pr =>
-        PlanarForestAlgebra.shuffleRight (mkwAntipode (R := R) pr.1) pr.2).sum =
+        PlanarForestAlgebra.shuffleRight pr.2 (mkwAntipode (R := R) pr.1)).sum =
       PlanarForestAlgebra.counitCoeff (R := R) ω • 1 := by
   rcases eq_or_ne ω [] with rfl | hω
   · simp
   · rw [mkwTerms_eq_self_nil_cons ω, List.map_cons, List.sum_cons,
-      PlanarForestAlgebra.shuffleRight_nil_right, mkwAntipode_of_ne_nil hω,
+      PlanarForestAlgebra.shuffleRight_nil_right, LinearMap.id_apply, mkwAntipode_of_ne_nil hω,
       PlanarForestAlgebra.counitCoeff_ne_nil hω, zero_smul, neg_add_cancel]
 
 /-! ### Small-order verification against arXiv:math/0603023
@@ -205,7 +185,7 @@ theorem mkwAntipode_chain2_forest [Ring R] :
   rw [htail]
   simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil,
     mkwAntipode_bullet_forest, mkwAntipode_nil,
-    PlanarForestAlgebra.shuffleRight_neg_left,
+    map_neg,
     PlanarForestAlgebra.shuffleRight_ofForest_left,
     PlanarForestAlgebra.shuffleRight_one_left,
     PlanarForestAlgebra.shuffleOf_singleton_singleton]
