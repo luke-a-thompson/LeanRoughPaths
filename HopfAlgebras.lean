@@ -30,3 +30,4 @@ import HopfAlgebras.Combinatorial.BCK
 import HopfAlgebras.Combinatorial.MKW
 import HopfAlgebras.Combinatorial.Graded
 import HopfAlgebras.Combinatorial.GradedInstances
+import HopfAlgebras.Words.AreaGeneration
