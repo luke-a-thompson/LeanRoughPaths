@@ -13,3 +13,12 @@ A formalisation of Rough Path theory in Lean 4.
 lake exe cache get
 lake build
 ```
+
+## Area reduction
+
+`HopfAlgebras.Word.AreaReduction.diff_primitive` reduces the integral of a
+product of moments against one more moment, for any labelled family closed
+under signed area. `eval_segment` is Chen's identity for such moment
+polynomials along a straight segment, over any field of characteristic zero.
+Neither refers to rooted trees or numerical methods; LeanBSeries supplies
+those for the Williamson order-transfer theorem.
