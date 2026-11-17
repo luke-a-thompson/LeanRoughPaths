@@ -35,3 +35,4 @@ import HopfAlgebras.Words.AreaReduction
 import HopfAlgebras.Words.AreaSegment
 import HopfAlgebras.Util.DerivationArea
 import HopfAlgebras.Words.ShuffleAlgebra
+import HopfAlgebras.Words.AreaGeneration
