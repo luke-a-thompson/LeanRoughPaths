@@ -33,3 +33,4 @@ import HopfAlgebras.Combinatorial.GradedInstances
 import HopfAlgebras.Words.Polynomial
 import HopfAlgebras.Words.AreaReduction
 import HopfAlgebras.Words.AreaSegment
+import HopfAlgebras.Util.DerivationArea
