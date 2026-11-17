@@ -20,6 +20,12 @@ namespace Derivation
 
 open List (selections selections_perm)
 
+private theorem sum_map_sub_const {M β : Type*} [AddCommGroup M] (l : List β) (c : M)
+    (f : β → M) : (l.map fun p => c - f p).sum = l.length • c - (l.map f).sum := by
+  induction l with
+  | nil => simp
+  | cons p l ih => simp only [List.map_cons, List.sum_cons, ih, List.length_cons, succ_nsmul]; abel
+
 variable {R A M : Type*} [CommSemiring R] [CommRing A] [Algebra R A]
   [AddCommGroup M] [Module A M] [Module R M] (D : Derivation R A M)
 
@@ -39,12 +45,6 @@ theorem leibniz_list_prod (xs : List A) :
       simp only [List.prod_cons, D.leibniz, ih, selections, List.map_cons, List.sum_cons,
         List.map_map, Function.comp_def, List.smul_sum, mul_smul]
       abel
-
-private theorem sum_map_sub_const (l : List (A × List A)) (c : M) (f : A × List A → M) :
-    (l.map fun p => c - f p).sum = l.length • c - (l.map f).sum := by
-  induction l with
-  | nil => simp
-  | cons p l ih => simp only [List.map_cons, List.sum_cons, ih, List.length_cons, succ_nsmul]; abel
 
 /-- **Area reduction.** Integration by parts, with the boundary term
 `D (y * ∏ xᵢ)` and one signed area for each factor. -/

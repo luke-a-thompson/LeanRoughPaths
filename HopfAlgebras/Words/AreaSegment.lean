@@ -104,15 +104,19 @@ theorem Poly.map_eval {R S : Type*} [CommRing R] [CommRing S]
 def segment (X V : α → K) (a : α) : K[X] :=
   C (X a) + Polynomial.X * C (V a)
 
+omit [CharZero K] in
 @[simp] theorem derivative_segment (X V : α → K) (a : α) :
     derivative (segment X V a) = C (V a) := by simp [segment]
 
+omit [CharZero K] in
 @[simp] theorem segment_eval_zero (X V : α → K) (a : α) :
     (segment X V a).eval 0 = X a := by simp [segment]
 
+omit [CharZero K] in
 @[simp] theorem segment_eval_one (X V : α → K) (a : α) :
     (segment X V a).eval 1 = X a + V a := by simp [segment]
 
+omit [CharZero K] in
 /-- The area identity at the start of a segment holds along all of it. -/
 theorem segment_area (graft : α → α → α) (X V : α → K)
     (harea : ∀ u v, V (graft u v) - V (graft v u) = X u * V v - X v * V u) (u v : α) :
