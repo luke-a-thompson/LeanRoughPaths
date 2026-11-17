@@ -56,3 +56,4 @@ import RoughPaths.RDE.Parameters
 import RoughPaths.RDE.Chaining
 
 import RoughPaths.Examples
+import RoughPaths.Signature.Area
