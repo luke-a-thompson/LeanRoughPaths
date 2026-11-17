@@ -34,3 +34,4 @@ import HopfAlgebras.Util.DerivationArea
 import HopfAlgebras.Words.Polynomial
 import HopfAlgebras.Words.AreaReduction
 import HopfAlgebras.Words.AreaSegment
+import HopfAlgebras.Words.ShuffleAlgebra
