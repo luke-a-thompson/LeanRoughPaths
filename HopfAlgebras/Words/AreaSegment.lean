@@ -1,6 +1,7 @@
 import HopfAlgebras.Words.AreaReduction
 import Mathlib.Algebra.Polynomial.AlgebraMap
 import Mathlib.Algebra.Polynomial.Derivative
+import Mathlib.Algebra.Polynomial.Derivation
 import Mathlib.Algebra.Polynomial.Eval.Degree
 import Mathlib.Algebra.Polynomial.Degree.Lemmas
 import Mathlib.Algebra.BigOperators.Intervals
@@ -15,7 +16,8 @@ primitive of `P w` against a letter of constant velocity. Moving the
 moments along the straight segment from `X` to `X + V` then multiplies by
 a chronological exponential: the deconcatenation formula with factorial
 denominators. The area identity for `(X, V)` persists along the segment,
-so the hypothesis follows from `diff_primitive`.
+so the hypothesis follows from `derivation_primitive` for the derivative
+in the segment parameter.
 
 Nothing here refers to trees or to a numerical method, and the scalars are
 any field of characteristic zero.
@@ -98,21 +100,6 @@ theorem Poly.map_eval {R S : Type*} [CommRing R] [CommRing S]
     simp [map_list_prod, List.map_map, Function.comp_def]
   exact LinearMap.congr_fun h p
 
-theorem derivative_monomial (X : α → K[X]) (ts : List α) :
-    derivative (ts.map X).prod = dmonomial X (fun a => derivative (X a)) ts := by
-  induction ts with
-  | nil => simp [dmonomial]
-  | cons t ts ih => simp [dmonomial, derivative_mul, ih]
-
-/-- The chain rule for moment polynomials. -/
-theorem Poly.derivative_eval (X : α → K[X]) (p : Poly α) :
-    derivative (Poly.eval X p) = Poly.diff X (fun a => derivative (X a)) p := by
-  have h : (derivative.restrictScalars ℚ).comp (Poly.eval X) =
-      Poly.diff X (fun a => derivative (X a)) := by
-    apply linearMap_ext; intro ts
-    simpa using derivative_monomial X ts
-  exact LinearMap.congr_fun h p
-
 /-- The straight segment from `X` to `X + V`, in the segment parameter. -/
 def segment (X V : α → K) (a : α) : K[X] :=
   C (X a) + Polynomial.X * C (V a)
@@ -129,8 +116,9 @@ def segment (X V : α → K) (a : α) : K[X] :=
 /-- The area identity at the start of a segment holds along all of it. -/
 theorem segment_area (graft : α → α → α) (X V : α → K)
     (harea : ∀ u v, V (graft u v) - V (graft v u) = X u * V v - X v * V u) (u v : α) :
-    C (V (graft u v)) - C (V (graft v u)) =
-      segment X V u * C (V v) - segment X V v * C (V u) := by
+    derivative' (segment X V (graft u v)) - derivative' (segment X V (graft v u)) =
+      (derivative' : Derivation K K[X] K[X]).area (segment X V u) (segment X V v) := by
+  simp only [derivative'_apply, derivative_segment, Derivation.area, smul_eq_mul]
   rw [← C_sub, harea]
   simp only [segment, C_sub, C_mul]
   ring
@@ -138,14 +126,13 @@ theorem segment_area (graft : α → α → α) (X V : α → K)
 /-- **Chen's identity on a straight segment.** -/
 theorem eval_segment (X V : α → K) (P : List β → Poly α) (v : β → K)
     (hnil : P [] = Poly.monomial [])
-    (hd : ∀ w b, Poly.diff (segment X V) (fun a => C (V a)) (P (w ++ [b])) =
+    (hd : ∀ w b, derivative (Poly.eval (segment X V) (P (w ++ [b]))) =
       Poly.eval (segment X V) (P w) * C (v b)) (w : List β) :
     Poly.eval (fun a => X a + V a) (P w) = ∑ j ∈ Finset.range (w.length + 1),
       Poly.eval X (P (w.take j)) * (((w.drop j).length.factorial : K))⁻¹ *
         ((w.drop j).map v).prod := by
   have h := chronological_eval_one
-    (fun w => Poly.eval (segment X V) (P w)) v (by simp [hnil])
-    (fun w b => by simpa [Poly.derivative_eval] using hd w b) w
+    (fun w => Poly.eval (segment X V) (P w)) v (by simp [hnil]) hd w
   have hev : ∀ (x : K) (p : Poly α), (Poly.eval (segment X V) p).eval x =
       Poly.eval (fun a => (segment X V a).eval x) p := fun x p => by
     simpa only [AlgHom.restrictScalars_apply, Polynomial.coe_aeval_eq_eval] using
