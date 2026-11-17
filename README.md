@@ -29,3 +29,17 @@ such moment polynomials along a straight segment, over any field of
 characteristic zero. None of this refers to rooted trees or numerical
 methods; LeanBSeries supplies those for the Williamson order-transfer
 theorem.
+
+## Areas of areas
+
+`HopfAlgebras.ShuffleAlgebra R α` is the shuffle algebra as a commutative
+ring. Deleting the last letter is a derivation of it
+(`ShuffleAlgebra.deletion`), and the half-shuffle and signed area are its
+integrals. The area-reduction identity for this derivation gives
+
+* `ShuffleAlgebra.adjoin_range_eval_eq_top`: iterated areas of letters
+  generate the shuffle algebra (Diehl–Lyons–Preiß–Reizenstein, *Areas of
+  areas generate the shuffle algebra*, Corollary 4.8), with the
+  homogeneous refinement `word_mem_areaSpan`;
+* `RoughPaths.Signature.ext_of_area_eq`: a signature is determined by its
+  iterated areas, and `eq_of_area_eq_weight` is the truncated version.
